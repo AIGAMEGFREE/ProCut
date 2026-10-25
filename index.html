@@ -118,6 +118,7 @@
   .media-item:hover{background:var(--bg-3);border-color:var(--line-2)}
   .media-item img{width:56px;height:34px;object-fit:cover;border-radius:4px;background:#000;flex-shrink:0}
   .media-item .audio-icon{width:56px;height:34px;border-radius:4px;background:linear-gradient(135deg,#7a5a1e,#5a4316);display:grid;place-items:center;font-size:16px;flex-shrink:0}
+  .media-item .missing-icon{width:56px;height:34px;border-radius:4px;background:linear-gradient(135deg,#7a1a1a,#5a1212);display:grid;place-items:center;font-size:16px;flex-shrink:0}
   .media-item .meta{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
   .media-item .meta .name{font-size:11.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .media-item .meta .info{font-size:10px;color:var(--txt-3);margin-top:1px}
@@ -287,6 +288,8 @@
   .clip.music-clip{background:linear-gradient(180deg,#7a5a1e,#5a4316)}
   .clip.fx-clip{background:linear-gradient(180deg,#a06b1a,#6e4712)}
   .clip.particle-clip{background:linear-gradient(180deg,#3d5c7a,#254058)}
+  .clip.missing-media{opacity:.55;background:linear-gradient(180deg,#7a1a1a,#5a1212)!important}
+  .clip.missing-media::after{content:'⚠ нет файла';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(239,68,68,.9);color:#fff;padding:2px 6px;border-radius:3px;font-size:8px;font-weight:700;z-index:10;white-space:nowrap}
   .clip .clip-thumb{position:absolute;inset:0;opacity:.35;background-size:auto 100%;background-repeat:repeat-x;pointer-events:none}
   .clip .clip-label{position:relative;z-index:2;padding:3px 5px;font-size:10px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}
   .clip .clip-title-badge{position:absolute;top:3px;right:4px;z-index:3;background:rgba(139,92,246,.9);color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:700;pointer-events:none}
@@ -351,6 +354,11 @@
   .ai-mode .ico{font-size:22px;display:block;margin-bottom:6px}
   .ai-mode b{font-size:12px;display:block;color:var(--txt)}
   .ai-mode small{font-size:10px;color:var(--txt-3);display:block;margin-top:3px}
+
+  .restore-banner{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:var(--warn);color:#000;padding:12px 20px;border-radius:8px;z-index:9996;font-weight:600;font-size:12px;display:none;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  .restore-banner.show{display:flex}
+  .restore-banner button{background:rgba(0,0,0,.2);color:#000;padding:6px 12px;border-radius:6px;font-weight:700;font-size:11px}
+  .restore-banner button:hover{background:rgba(0,0,0,.35)}
 </style>
 </head>
 <body>
@@ -573,6 +581,11 @@
 
 <div class="toast" id="toast"></div>
 
+<div class="restore-banner" id="restoreBanner">
+  <span>⚠ Файлы не найдены. Открыть папку, чтобы подтянуть видео?</span>
+  <button id="restoreBannerBtn">📂 Открыть папку</button>
+</div>
+
 <div class="progress-overlay" id="progressOverlay">
   <div class="progress-card">
     <h3 id="progressTitle">Обработка…</h3>
@@ -725,7 +738,7 @@
 
 <script>
 /* ============================================================
-   ProCut Pro — Full build with music + particles + russian fonts
+   ProCut Pro — Full build with FIXED load/save
    ============================================================ */
 const $ = id => document.getElementById(id);
 const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
@@ -748,6 +761,7 @@ const FS = {
       await this.saveHandle().catch(()=>{});
       $('launcherFolderLabel').textContent = 'Папка:';
       $('launcherFolderName').textContent = this.dirHandle.name;
+      $('restoreBanner').classList.remove('show');
       toast(`Папка: ${this.dirHandle.name}`, 'ok');
       return true;
     } catch(err){
@@ -775,6 +789,24 @@ const FS = {
         this.dirHandle = handle;
         $('launcherFolderLabel').textContent = 'Папка:';
         $('launcherFolderName').textContent = handle.name;
+        return true;
+      }
+      // If prompt — не запрашиваем автоматически, показываем баннер
+      if(perm === 'prompt'){
+        this._pendingHandle = handle;
+      }
+    } catch(e){}
+    return false;
+  },
+  async requestPendingAccess(){
+    if(!this._pendingHandle) return false;
+    try {
+      const r = await this._pendingHandle.requestPermission({ mode: 'readwrite' });
+      if(r === 'granted'){
+        this.dirHandle = this._pendingHandle;
+        $('launcherFolderLabel').textContent = 'Папка:';
+        $('launcherFolderName').textContent = this.dirHandle.name;
+        $('restoreBanner').classList.remove('show');
         return true;
       }
     } catch(e){}
@@ -940,7 +972,7 @@ const FONTS = [
   {name:'Comfortaa',   family:"'Comfortaa', cursive",        flags:'🇷🇺🇺🇸'},
   {name:'Amatic SC',   family:"'Amatic SC', cursive",        flags:'🇷🇺🇺🇸'},
   {name:'Neucha',      family:"'Neucha', cursive",           flags:'🇷🇺'},
-  {name:'Pangolin',    family:"'Pangolin', cursive",         flags:'🇷🇺🇺🇸'},
+  {name:'Pangolin',    family:'Pangolin',                     flags:'🇷🇺🇺🇸'},
   {name:'Yeseva One',  family:"'Yeseva One', serif",         flags:'🇷🇺🇺🇸'},
   {name:'Underdog',    family:"'Underdog', cursive",         flags:'🇷🇺'},
 ];
@@ -984,7 +1016,7 @@ function undo(){
 }
 
 /* ============================================================
-   FX LIBRARY (с частицами)
+   FX LIBRARY
    ============================================================ */
 const PARTICLE_IDS = ['snow','fire','rain','leaves','sparks','confetti','bubbles','stars','fog','matrix'];
 
@@ -1043,7 +1075,7 @@ function getFxDef(id){ return ALL_FX.find(f => f.id === id); }
 function isParticleFx(id){ return PARTICLE_IDS.includes(id); }
 
 /* ============================================================
-   MEDIA IMPORT
+   IMPORT
    ============================================================ */
 async function importFiles(files, onProgress, defaultTrack = null){
   const bar = document.createElement('div'); bar.className = 'loading-bar'; $('previewStage').appendChild(bar);
@@ -1082,7 +1114,8 @@ async function importFiles(files, onProgress, defaultTrack = null){
     const m = {
       id: mediaId, type:isVideo?'video':isAudio?'audio':'image',
       name:file.name, file, url, duration, width, height, thumb, el,
-      diskName: null, defaultTrack: defaultTrack || (isAudio ? 'audio' : null)
+      diskName: null, defaultTrack: defaultTrack || (isAudio ? 'audio' : null),
+      missing: false
     };
     State.media.push(m);
 
@@ -1090,7 +1123,9 @@ async function importFiles(files, onProgress, defaultTrack = null){
       try {
         const diskName = await Promise.race([FS.saveMediaToDisk(mediaId, file), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 15000))]);
         m.diskName = diskName;
-      } catch(e){}
+      } catch(e){ console.warn('Не сохранилось на диск:', file.name, e); }
+    } else {
+      console.warn('Папка не открыта — файл не сохранён на диск (только в памяти)');
     }
   }
   bar.remove(); renderMedia(); setStatus('Готов');
@@ -1116,7 +1151,9 @@ function renderMedia(){
   State.media.forEach(m=>{
     const div = document.createElement('div'); div.className = 'media-item';
     let visual = '';
-    if(m.type === 'image' || (m.type === 'video' && m.thumb)){
+    if(m.missing){
+      visual = `<div class="missing-icon">⚠</div>`;
+    } else if(m.type === 'image' || (m.type === 'video' && m.thumb)){
       visual = `<img src="${m.thumb||''}" alt="">`;
     } else if(m.type === 'audio'){
       const icon = m.defaultTrack === 'music' ? '🎵' : '🎤';
@@ -1124,9 +1161,9 @@ function renderMedia(){
     } else {
       visual = `<div class="audio-icon">🎬</div>`;
     }
-    const typeLabel = m.type === 'audio'
+    const typeLabel = m.missing ? '⚠ файл не найден' : (m.type === 'audio'
       ? (m.defaultTrack === 'music' ? '🎵 Музыка' : '🎤 Аудио')
-      : m.type;
+      : m.type);
     div.innerHTML = `${visual}<div class="meta"><div class="name">${escapeHtml(m.name)}</div><div class="info">${m.duration?fmt(m.duration):'—'} • ${typeLabel}</div></div><button class="add" title="Добавить">+</button>`;
     div.querySelector('.add').onclick = e => {e.stopPropagation(); addClipFromMedia(m);};
     div.ondblclick = ()=>addClipFromMedia(m);
@@ -1197,7 +1234,7 @@ function computeFxStack(fxList){
   const out = { x:0, y:0, scale:1, alpha:1, rotation:0, extraFilter:'', post: [] };
   if(!fxList || !fxList.length) return out;
   for(const fx of fxList){
-    if(isParticleFx(fx.id)) continue; // частицы рисуются отдельно
+    if(isParticleFx(fx.id)) continue;
     const p = fx.p, par = fx.params || {};
     const fade = p < 0.7 ? 1 : (1 - (p-0.7)/0.3);
     switch(fx.id){
@@ -1266,7 +1303,6 @@ function drawParticleEffect(targetCtx, fx, W, H, time){
   const fadeIn = Math.min(1, p * 5);
   const fadeOut = Math.min(1, (1 - p) * 5);
   const intensity = Math.min(fadeIn, fadeOut);
-
   targetCtx.globalAlpha = intensity;
 
   switch(fx.id){
@@ -1583,7 +1619,7 @@ function compositeFrame(time, W, H, targetCtx = ctx, targetCanvas = canvas){
   const activeFx = getActiveFxAt(time);
   const fxT = computeFxStack(activeFx);
 
-  if(active && media){
+  if(active && media && media.el && !media.missing){
     const clipDur = getClipDuration(active);
     const localTime = time - active.start;
     let transOffset = {x:0, y:0, scale:1, alpha:1};
@@ -1601,15 +1637,14 @@ function compositeFrame(time, W, H, targetCtx = ctx, targetCanvas = canvas){
     targetCtx.globalAlpha = clamp(transOffset.alpha * fadeAlpha * fxT.alpha * (active.fx.opacity/100), 0, 1);
     targetCtx.filter = cssFilter(active.fx) + (fxT.extraFilter ? ' ' + fxT.extraFilter : '');
     const finalTrans = {x:transOffset.x+fxT.x, y:transOffset.y+fxT.y, scale:transOffset.scale*fxT.scale, rotation:fxT.rotation};
-    if(media.type === 'image' && media.el) drawFitTransformed(targetCtx, media.el, W, H, finalTrans);
-    else if(media.el && videoReady(media.el)) drawFitTransformed(targetCtx, media.el, W, H, finalTrans);
+    if(media.type === 'image') drawFitTransformed(targetCtx, media.el, W, H, finalTrans);
+    else if(videoReady(media.el)) drawFitTransformed(targetCtx, media.el, W, H, finalTrans);
     targetCtx.restore();
     targetCtx.filter = 'none';
   }
 
   if(targetCtx === ctx) applyPostFx(fxT, W, H);
 
-  // Частицы — ПОВЕРХ видео
   const particleFx = activeFx.filter(f => isParticleFx(f.id));
   if(particleFx.length > 0){
     targetCtx.save();
@@ -1617,7 +1652,6 @@ function compositeFrame(time, W, H, targetCtx = ctx, targetCanvas = canvas){
     targetCtx.restore();
   }
 
-  // Титры — поверх всего
   State.clips.forEach(clip => {
     if(clip.track !== 'video' || !clip.title) return;
     if(time < clip.start || time >= clip.start + getClipDuration(clip)) return;
@@ -1645,7 +1679,7 @@ async function renderPreviewAt(time){
   canvas.style.display = 'block'; $('previewEmpty').style.display = 'none';
   ensureCanvasSize();
 
-  if(active && media && media.type !== 'image' && media.el && videoReady(media.el)){
+  if(active && media && media.type !== 'image' && media.el && videoReady(media.el) && !media.missing){
     const v = media.el;
     const target = clamp((time - active.start) * active.speed + active.in, 0, v.duration || 0);
     if(Math.abs(v.currentTime - target) > 0.05){
@@ -1691,7 +1725,7 @@ function prepareActiveVideo(time){
     State.media.forEach(m => { if(m.el && m.el.pause && m.id !== clip?.mediaId) m.el.pause(); });
     if(clip){
       const media = getMedia(clip.mediaId);
-      if(media && media.type === 'video' && media.el){
+      if(media && media.type === 'video' && media.el && !media.missing){
         const v = media.el;
         v.currentTime = clamp((time - clip.start) * clip.speed + clip.in, 0, v.duration || 0);
         v.playbackRate = clip.speed; v.muted = false; v.volume = clip.volume;
@@ -1701,9 +1735,8 @@ function prepareActiveVideo(time){
     }
   } else if(clip && activeVideoEl && activeVideoEl.paused) activeVideoEl.play().catch(()=>{});
 
-  // Аудио/музыка
   State.media.forEach(m => {
-    if(m.type !== 'audio' || !m.el) return;
+    if(m.type !== 'audio' || !m.el || m.missing) return;
     const activeClips = State.clips.filter(c =>
       c.mediaId === m.id &&
       (c.track === 'audio' || c.track === 'music') &&
@@ -1943,7 +1976,8 @@ function makeClipEl(clip){
   const pps = State.pixelsPerSec, media = getMedia(clip.mediaId), dur = getClipDuration(clip);
   const el = document.createElement('div');
   const isParticle = clip.track === 'fx' && isParticleFx(clip.fxId);
-  el.className = 'clip ' + (isParticle ? 'particle-clip' : clip.track + '-clip') + (clip.id === State.selectedId ? ' selected' : '');
+  const isMissing = media && media.missing;
+  el.className = 'clip ' + (isParticle ? 'particle-clip' : clip.track + '-clip') + (clip.id === State.selectedId ? ' selected' : '') + (isMissing ? ' missing-media' : '');
   el.dataset.id = clip.id;
   el.style.left = (clip.start * pps) + 'px';
   el.style.width = Math.max(20, dur * pps) + 'px';
@@ -2061,7 +2095,7 @@ function updateInspector(){
     $('propDur').textContent = fmt(dur);
     $('propRes').textContent = media?.width ? `${media.width}×${media.height}` : '—';
     $('propFps').textContent = media?.type === 'image' ? '—' : '30';
-    $('propType').textContent = media?.type || '—';
+    $('propType').textContent = media?.missing ? '⚠ файл потерян' : (media?.type || '—');
     const maxDur = media?.duration || 1;
     $('trimRange').style.left = ((c.in/maxDur)*100) + '%';
     $('trimRange').style.width = (((c.out-c.in)/maxDur)*100) + '%';
@@ -2274,7 +2308,7 @@ function renderAll(){
 }
 
 /* ============================================================
-   SAVE / LOAD
+   SAVE / LOAD (FIXED!)
    ============================================================ */
 function serializeProject(){
   return {
@@ -2310,26 +2344,61 @@ async function saveProject(silent = false){
   }
 }
 
+/* ✅ ГЛАВНЫЙ ФИКС — загрузка проекта с восстановлением видео */
 async function loadProject(id, silent = false){
+  // 1. Читаем сам проект
   let proj = null;
   if(FS.dirHandle){
-    try { proj = await FS.loadProjectFromDisk(id); } catch(e){}
+    try { proj = await FS.loadProjectFromDisk(id); } catch(e){ console.warn('Не удалось прочитать с диска', e); }
   }
   if(!proj) proj = LS.get(id);
   if(!proj){ toast('Проект не найден', 'err'); return; }
 
+  // 2. Если папка не открыта — пробуем восстановить доступ
+  if(!FS.dirHandle && FS.hasFS){
+    const hasPending = !!FS._pendingHandle;
+    // Попробуем запросить разрешение у сохранённого handle
+    const gotPending = await FS.requestPendingAccess().catch(()=>false);
+    if(!gotPending){
+      // Показываем баннер "открыть папку"
+      $('restoreBanner').classList.add('show');
+      toast('Папка не открыта — видео может не загрузиться', 'warn');
+    }
+  }
+
+  // 3. Загружаем медиа
   const newMedia = [];
+  let missingCount = 0;
+  let restoredFromLibrary = 0;
+
   for(const m of (proj.media || [])){
     let file = null;
+
+    // Пробуем с диска
     if(FS.dirHandle && m.diskName){
-      try { file = await FS.readFile('media', m.diskName); } catch(e){ console.warn('Медиа не найдено', m.diskName); }
+      try { file = await FS.readFile('media', m.diskName); }
+      catch(e){ console.warn('Файл не найден на диске:', m.diskName); }
     }
+
+    // Если нет файла — пробуем найти в текущей медиатеке по имени
     if(!file){
+      const found = State.media.find(lib => lib.name === m.name && lib.file);
+      if(found){
+        file = found.file;
+        restoredFromLibrary++;
+      }
+    }
+
+    if(!file){
+      // Всё равно нет — пустышка
       newMedia.push({ ...m, file: null, url: '', el: null, missing: true });
+      missingCount++;
       continue;
     }
+
     const url = URL.createObjectURL(file);
     let el, width, height, duration, thumb;
+
     if(m.type === 'image'){
       el = new Image(); el.src = url;
       await new Promise(r => { el.onload = r; el.onerror = r; });
@@ -2338,20 +2407,29 @@ async function loadProject(id, silent = false){
     } else {
       el = document.createElement(m.type === 'video' ? 'video' : 'audio');
       el.src = url; el.preload = 'metadata';
-      try { await Promise.race([new Promise(r => { el.onloadedmetadata = r; el.onerror = r; }), new Promise(r => setTimeout(r, 3000))]); } catch(e){}
+      try {
+        await Promise.race([
+          new Promise(r => { el.onloadedmetadata = r; el.onerror = r; }),
+          new Promise(r => setTimeout(r, 3000))
+        ]);
+      } catch(e){ console.warn('metadata timeout', m.name); }
       duration = el.duration || 0;
-      width = el.videoWidth || 0; height = el.videoHeight || 0;
+      width = el.videoWidth || 0;
+      height = el.videoHeight || 0;
       thumb = m.thumb || '';
     }
+
     newMedia.push({
       id: m.id, type: m.type, name: m.name,
       file, url, duration: m.duration || duration,
       width: m.width || width, height: m.height || height,
       thumb: m.thumb || thumb, el, diskName: m.diskName,
-      defaultTrack: m.defaultTrack || null
+      defaultTrack: m.defaultTrack || null,
+      missing: false
     });
   }
 
+  // 4. Применяем
   State.media = newMedia;
   State.clips = proj.clips || [];
   State.projectName = proj.name;
@@ -2359,11 +2437,25 @@ async function loadProject(id, silent = false){
   State.projectW = proj.projectW || 1280;
   State.projectH = proj.projectH || 720;
   State.fps = proj.fps || 30;
-  State.selectedId = null; State.playhead = 0;
+  State.selectedId = null;
+  State.playhead = 0;
   markSaved();
 
   enterEditor();
-  if(!silent) toast(`Проект "${proj.name}" открыт`, 'ok');
+
+  // 5. Показываем результат
+  if(missingCount > 0){
+    const stillMissing = newMedia.filter(m => m.missing).length;
+    if(stillMissing > 0){
+      toast(`⚠️ ${stillMissing} видео не найдено. Откройте папку media/ или импортируйте заново.`, 'err');
+    } else {
+      toast(`✅ Все видео восстановлены (${restoredFromLibrary} из медиатеки)`, 'ok');
+    }
+  } else if(restoredFromLibrary > 0){
+    toast(`Проект "${proj.name}" открыт (${restoredFromLibrary} видео из медиатеки)`, 'ok');
+  } else if(!silent){
+    toast(`Проект "${proj.name}" открыт`, 'ok');
+  }
 }
 
 /* ============================================================
@@ -2867,7 +2959,7 @@ async function exportVideo(){
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       dest = audioCtx.createMediaStreamDestination();
       State.media.forEach(m=>{
-        if(!m.el || !m.el.play) return;
+        if(!m.el || !m.el.play || m.missing) return;
         try {
           if(!m._srcNode){
             m._srcNode = audioCtx.createMediaElementSource(m.el);
@@ -2946,6 +3038,14 @@ function bindUI(){
   $('newProjectBtn').onclick = showNewProjectModal;
   $('aiProjectBtn').onclick = openAIModal;
 
+  $('restoreBannerBtn').onclick = async ()=>{
+    const ok = await FS.openFolder();
+    $('restoreBanner').classList.remove('show');
+    if(ok && State.currentProjectId){
+      await loadProject(State.currentProjectId, true);
+    }
+  };
+
   $('newProjCancel').onclick = ()=>$('newProjectModal').classList.remove('show');
   $('newProjCreate').onclick = createNewProject;
 
@@ -2973,7 +3073,6 @@ function bindUI(){
   dz.ondragleave = ()=>dz.classList.remove('over');
   dz.ondrop = async e=>{e.preventDefault(); dz.classList.remove('over'); await importFiles(Array.from(e.dataTransfer.files));};
 
-  // Music
   $('musicInput').onchange = async e=>{
     await importFiles(Array.from(e.target.files), null, 'music');
     e.target.value='';
@@ -3095,6 +3194,11 @@ async function init(){
   bindUI();
 
   try { await FS.restoreHandle(); } catch(e){ console.warn(e); }
+
+  // Показать баннер если есть pending access
+  if(FS._pendingHandle && !FS.dirHandle){
+    $('restoreBanner').classList.add('show');
+  }
 
   await renderLauncherProjects();
 
