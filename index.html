@@ -251,7 +251,7 @@
   .color-row input[type=color]{width:40px;height:32px;border:1px solid var(--line-2);border-radius:5px;background:var(--bg-2);cursor:pointer;padding:2px}
   .color-row input[type=text]{flex:1}
 
-  .timeline{background:var(--bg-1);border-top:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+  .timeline{background:var(--bg-1);border-top:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden;position:relative}
   .tl-toolbar{display:flex;align-items:center;gap:4px;padding:5px 10px;border-bottom:1px solid var(--line);background:var(--bg-2)}
   .tl-toolbar .tl-btn{padding:5px 9px;border-radius:4px;font-size:11px;color:var(--txt-2);display:flex;align-items:center;gap:4px;transition:.15s}
   .tl-toolbar .tl-btn:hover{background:var(--bg-3);color:var(--txt)}
@@ -261,7 +261,7 @@
   .tl-toolbar .scale{display:flex;align-items:center;gap:5px;color:var(--txt-3);font-size:10.5px}
   .tl-toolbar input[type=range]{width:80px;accent-color:var(--acc)}
 
-  .tl-body{flex:1;display:flex;overflow:hidden}
+  .tl-body{flex:1;display:flex;overflow:hidden;position:relative}
   .tl-labels{width:64px;background:var(--bg-2);border-right:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0}
   .tl-label-head{height:22px;border-bottom:1px solid var(--line)}
   .tl-label{height:52px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 8px;font-size:10px;color:var(--txt-3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;gap:5px}
@@ -280,9 +280,21 @@
   .tl-track{height:52px;border-bottom:1px solid var(--line);position:relative;background:var(--bg-0)}
   .tl-track.fx,.tl-track.video,.tl-track.audio,.tl-track.music{background:repeating-linear-gradient(90deg,transparent,transparent 50px,rgba(42,47,61,.3) 50px,rgba(42,47,61,.3) 51px)}
 
+  /* Marquee selection */
+  .marquee-box{
+    position:absolute;
+    border:1.5px dashed var(--acc);
+    background:rgba(91,140,255,.1);
+    pointer-events:none;
+    z-index:100;
+    display:none;
+  }
+  .marquee-box.show{display:block}
+
   .clip{position:absolute;top:3px;height:46px;border-radius:5px;overflow:hidden;cursor:grab;transition:box-shadow .15s;border:1px solid rgba(255,255,255,.1);user-select:none}
   .clip:hover{box-shadow:0 0 0 2px rgba(91,140,255,.5)}
   .clip.selected{box-shadow:0 0 0 2px var(--acc),0 4px 16px rgba(91,140,255,.4);z-index:5}
+  .clip.selected-multi{box-shadow:0 0 0 2px var(--acc-2),0 4px 16px rgba(124,91,255,.4);z-index:5}
   .clip.video-clip{background:linear-gradient(180deg,#3b4d8a,#2d3a6b)}
   .clip.audio-clip{background:linear-gradient(180deg,#1e6b3d,#164d2c)}
   .clip.music-clip{background:linear-gradient(180deg,#7a5a1e,#5a4316)}
@@ -531,7 +543,8 @@
             <div class="slider-row"><label>Сепия</label><input type="range" id="pSepia" min="0" max="100" value="0"><span class="val" id="vSepia">0</span></div>
             <div class="slider-row"><label>Прозрач.</label><input type="range" id="pOpacity" min="0" max="100" value="100"><span class="val" id="vOpacity">100</span></div>
             <div class="section-title">Аудио</div>
-            <div class="slider-row"><label>Громкость</label><input type="range" id="pVolume" min="0" max="100" value="100"><span class="val" id="vVolume">100</span></div>
+            <div class="slider-row"><label>Громкость</label><input type="range" id="pVolume" min="0" max="200" value="100"><span class="val" id="vVolume">100</span></div>
+            <div class="slider-row"><label>Панорама</label><input type="range" id="pPan" min="-100" max="100" value="0"><span class="val" id="vPan">0</span></div>
             <div class="slider-row"><label>Fade in</label><input type="range" id="pFadeIn" min="0" max="300" value="0"><span class="val" id="vFadeIn">0</span></div>
             <div class="slider-row"><label>Fade out</label><input type="range" id="pFadeOut" min="0" max="300" value="0"><span class="val" id="vFadeOut">0</span></div>
             <div class="field" id="loopBlock" style="display:none">
@@ -557,7 +570,7 @@
       <button class="tl-btn danger" id="btnClearAll">🗑 Очистить</button>
       <div class="scale"><span>🔍</span><input type="range" id="scaleRange" min="20" max="300" value="60"></div>
     </div>
-    <div class="tl-body">
+    <div class="tl-body" id="tlBody">
       <div class="tl-labels">
         <div class="tl-label-head"></div>
         <div class="tl-label fx"><span class="ic">⚡</span> FX</div>
@@ -574,6 +587,7 @@
           <div class="tl-track music" id="trackMusic"></div>
         </div>
         <div class="playhead" id="playhead" style="left:0"></div>
+        <div class="marquee-box" id="marqueeBox"></div>
       </div>
     </div>
   </section>
@@ -738,7 +752,7 @@
 
 <script>
 /* ============================================================
-   ProCut Pro — Full build with FIXED load/save
+   ProCut Pro — multi-select + audio settings
    ============================================================ */
 const $ = id => document.getElementById(id);
 const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
@@ -791,7 +805,6 @@ const FS = {
         $('launcherFolderName').textContent = handle.name;
         return true;
       }
-      // If prompt — не запрашиваем автоматически, показываем баннер
       if(perm === 'prompt'){
         this._pendingHandle = handle;
       }
@@ -981,7 +994,8 @@ const FONTS = [
    STATE
    ============================================================ */
 const State = {
-  media: [], clips: [], selectedId: null, playhead: 0, playing: false,
+  media: [], clips: [], selectedId: null, selectedIds: [],
+  playhead: 0, playing: false,
   pixelsPerSec: 60, tool: 'select',
   history: [], historyIdx: -1,
   fps: 30, projectW: 1280, projectH: 720,
@@ -1011,7 +1025,7 @@ function undo(){
   if(State.historyIdx<=0) return;
   State.historyIdx--;
   const s = JSON.parse(State.history[State.historyIdx]);
-  State.clips = s.clips; State.selectedId = s.selectedId; State.playhead = s.playhead||0;
+  State.clips = s.clips; State.selectedId = s.selectedId; State.selectedIds = []; State.playhead = s.playhead||0;
   renderAll(); toast('Отменено');
 }
 
@@ -1124,8 +1138,6 @@ async function importFiles(files, onProgress, defaultTrack = null){
         const diskName = await Promise.race([FS.saveMediaToDisk(mediaId, file), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 15000))]);
         m.diskName = diskName;
       } catch(e){ console.warn('Не сохранилось на диск:', file.name, e); }
-    } else {
-      console.warn('Папка не открыта — файл не сохранён на диск (только в памяти)');
     }
   }
   bar.remove(); renderMedia(); setStatus('Готов');
@@ -1186,7 +1198,7 @@ function addClipFromMedia(media, opts={}){
   }
   const clip = {
     id: uid(), mediaId: media.id, track, start,
-    in: 0, out: dur, speed: 1, volume: 1,
+    in: 0, out: dur, speed: 1, volume: 1, pan: 0,
     name: opts.name || media.name.replace(/\.[^.]+$/,''),
     type: media.type,
     fx: {brightness:100, contrast:100, saturate:100, hue:0, blur:0, sepia:0, opacity:100, grayscale:0, invert:0},
@@ -1195,6 +1207,7 @@ function addClipFromMedia(media, opts={}){
   };
   State.clips.push(clip);
   State.selectedId = clip.id;
+  State.selectedIds = [clip.id];
   snapshot(); renderAll();
   toast(`Добавлено: ${clip.name}`, 'ok');
 }
@@ -1202,6 +1215,7 @@ function addClipFromMedia(media, opts={}){
 function getClipDuration(c){return (c.out-c.in)/c.speed;}
 function getMedia(id){return State.media.find(m=>m.id===id);}
 function getSelectedClip(){return State.clips.find(c=>c.id===State.selectedId);}
+function getSelectedClips(){return State.clips.filter(c => State.selectedIds.includes(c.id));}
 function getTimelineDuration(){let max=0;State.clips.forEach(c=>{const end=c.start+getClipDuration(c);if(end>max)max=end;});return max;}
 
 /* ============================================================
@@ -1221,6 +1235,7 @@ function addFxToTimeline(fxId, opts={}){
   };
   State.clips.push(clip);
   State.selectedId = clip.id;
+  State.selectedIds = [clip.id];
   snapshot(); renderAll();
   toast(`⚡ ${def.name}`, 'ok');
 }
@@ -1735,6 +1750,7 @@ function prepareActiveVideo(time){
     }
   } else if(clip && activeVideoEl && activeVideoEl.paused) activeVideoEl.play().catch(()=>{});
 
+  // Audio playback with pan
   State.media.forEach(m => {
     if(m.type !== 'audio' || !m.el || m.missing) return;
     const activeClips = State.clips.filter(c =>
@@ -1943,7 +1959,7 @@ $('previewStage').addEventListener('click', (e) => {
 });
 
 /* ============================================================
-   TIMELINE
+   TIMELINE RENDER
    ============================================================ */
 function renderTimeline(){
   const pps = State.pixelsPerSec, total = Math.max(getTimelineDuration(), 10);
@@ -1977,7 +1993,12 @@ function makeClipEl(clip){
   const el = document.createElement('div');
   const isParticle = clip.track === 'fx' && isParticleFx(clip.fxId);
   const isMissing = media && media.missing;
-  el.className = 'clip ' + (isParticle ? 'particle-clip' : clip.track + '-clip') + (clip.id === State.selectedId ? ' selected' : '') + (isMissing ? ' missing-media' : '');
+  const isSelected = State.selectedIds.includes(clip.id);
+  const isMain = clip.id === State.selectedId;
+
+  el.className = 'clip ' + (isParticle ? 'particle-clip' : clip.track + '-clip') +
+    (isSelected ? (isMain ? ' selected' : ' selected-multi') : '') +
+    (isMissing ? ' missing-media' : '');
   el.dataset.id = clip.id;
   el.style.left = (clip.start * pps) + 'px';
   el.style.width = Math.max(20, dur * pps) + 'px';
@@ -1993,7 +2014,21 @@ function makeClipEl(clip){
   el.addEventListener('mousedown', e => {
     if(State.tool === 'cut'){ const rect = el.getBoundingClientRect(); splitClipAt(clip.id, clip.start + (e.clientX-rect.left)/pps); return; }
     if(e.target.classList.contains('handle')) return;
-    selectClip(clip.id); startDrag(e, clip, 'move');
+    e.stopPropagation();
+    if(e.shiftKey || e.ctrlKey || e.metaKey){
+      // Multi-select toggle
+      if(State.selectedIds.includes(clip.id)){
+        State.selectedIds = State.selectedIds.filter(id => id !== clip.id);
+        if(State.selectedId === clip.id) State.selectedId = State.selectedIds[0] || null;
+      } else {
+        State.selectedIds.push(clip.id);
+        State.selectedId = clip.id;
+      }
+      renderTimeline(); updateInspector();
+    } else {
+      selectClip(clip.id);
+      startDrag(e, clip, 'move');
+    }
   });
   const leftH = el.querySelector('.handle.left'), rightH = el.querySelector('.handle.right');
   leftH.addEventListener('mousedown', e => {e.stopPropagation(); selectClip(clip.id); startDrag(e, clip, 'trim-left');});
@@ -2029,34 +2064,186 @@ function splitClipAt(clipId, globalTime){
   const right = JSON.parse(JSON.stringify(clip));
   right.id = uid(); right.in = splitPoint; right.start = globalTime;
   clip.out = splitPoint;
-  State.clips.push(right); State.selectedId = right.id;
+  State.clips.push(right); State.selectedId = right.id; State.selectedIds = [right.id];
   snapshot(); renderAll(); toast('Клип разрезан');
 }
 
 function deleteSelected(){
-  if(!State.selectedId) return;
-  State.clips = State.clips.filter(c => c.id !== State.selectedId);
-  State.selectedId = null;
-  snapshot(); renderAll(); toast('Клип удалён');
+  if(State.selectedIds.length === 0) return;
+  State.clips = State.clips.filter(c => !State.selectedIds.includes(c.id));
+  State.selectedId = null; State.selectedIds = [];
+  snapshot(); renderAll();
+  toast(`Удалено клипов: ${State.selectedIds.length || 'все'}`);
 }
 
 function duplicateSelected(){
-  const c = getSelectedClip(); if(!c) return;
-  const copy = JSON.parse(JSON.stringify(c));
-  copy.id = uid(); copy.start = c.start + getClipDuration(c);
-  State.clips.push(copy); State.selectedId = copy.id;
-  snapshot(); renderAll(); toast('Клип продублирован');
+  const clipsToCopy = getSelectedClips();
+  if(clipsToCopy.length === 0) return;
+  clipsToCopy.forEach(c => {
+    const copy = JSON.parse(JSON.stringify(c));
+    copy.id = uid();
+    copy.start = c.start + getClipDuration(c);
+    State.clips.push(copy);
+  });
+  State.selectedIds = State.selectedIds.map(id => {
+    const newClip = State.clips[State.clips.length - 1];
+    return newClip.id;
+  });
+  snapshot(); renderAll(); toast(`Продублировано: ${clipsToCopy.length}`);
 }
+
+/* ============================================================
+   MULTI-SELECT MARQUEE
+   ============================================================ */
+const tlBody = $('tlBody');
+const tlScroll = $('tlScroll');
+const marqueeBox = $('marqueeBox');
+
+let marqueeStart = null;
+let marqueeActive = false;
+
+tlScroll.addEventListener('mousedown', (e) => {
+  // Игнорируем клики по клипам
+  if(e.target.closest('.clip')) return;
+  if(e.target === $('playhead')) return;
+  if(State.tool === 'cut') return;
+
+  // Начинаем marquee
+  e.preventDefault();
+  const rect = tlScroll.getBoundingClientRect();
+  const scrollLeft = tlScroll.scrollLeft;
+  const scrollTop = tlScroll.scrollTop;
+
+  marqueeStart = {
+    x: e.clientX - rect.left + scrollLeft,
+    y: e.clientY - rect.top + scrollTop,
+    clientX: e.clientX,
+    clientY: e.clientY,
+    rect
+  };
+  marqueeActive = true;
+
+  marqueeBox.style.left = (e.clientX - rect.left) + 'px';
+  marqueeBox.style.top = (e.clientY - rect.top) + 'px';
+  marqueeBox.style.width = '0px';
+  marqueeBox.style.height = '0px';
+  marqueeBox.classList.add('show');
+
+  // Если не зажат Shift/Ctrl — снимаем выделение
+  if(!e.shiftKey && !e.ctrlKey && !e.metaKey){
+    State.selectedIds = [];
+    State.selectedId = null;
+    renderTimeline();
+  }
+});
+
+document.addEventListener('mousemove', (e) => {
+  if(!marqueeActive || !marqueeStart) return;
+
+  const rect = tlScroll.getBoundingClientRect();
+  const scrollLeft = tlScroll.scrollLeft;
+  const scrollTop = tlScroll.scrollTop;
+
+  const currentX = e.clientX - rect.left + scrollLeft;
+  const currentY = e.clientY - rect.top + scrollTop;
+
+  const left = Math.min(marqueeStart.x, currentX);
+  const top = Math.min(marqueeStart.y, currentY);
+  const width = Math.abs(currentX - marqueeStart.x);
+  const height = Math.abs(currentY - marqueeStart.y);
+
+  marqueeBox.style.left = (left - scrollLeft) + 'px';
+  marqueeBox.style.top = (top - scrollTop) + 'px';
+  marqueeBox.style.width = width + 'px';
+  marqueeBox.style.height = height + 'px';
+
+  // Проверяем какие клипы попали в рамку
+  const pps = State.pixelsPerSec;
+  const clipsToSelect = [];
+
+  State.clips.forEach(clip => {
+    const trackIndex = ['fx','video','audio','music'].indexOf(clip.track);
+    if(trackIndex === -1) return;
+    
+    const clipLeft = clip.start * pps;
+    const clipRight = clipLeft + getClipDuration(clip) * pps;
+    
+    // Позиция клипа по Y в tl-tracks
+    // Высота трека 52px, начинается с 0 (после рулера 22px — но у нас top от tlScroll, а рулер встроен)
+    // Рулер высотой 22px — в tlTracks клипы уже без него
+    const trackTop = trackIndex * 52;
+    const trackBottom = trackTop + 52;
+
+    // Проверка пересечения
+    const overlapX = clipLeft < left + width && clipRight > left;
+    const overlapY = trackTop < top + height && trackBottom > top;
+
+    if(overlapX && overlapY){
+      clipsToSelect.push(clip.id);
+    }
+  });
+
+  State.selectedIds = clipsToSelect;
+  State.selectedId = clipsToSelect[0] || null;
+  renderTimeline();
+});
+
+document.addEventListener('mouseup', (e) => {
+  if(marqueeActive){
+    marqueeActive = false;
+    marqueeStart = null;
+    marqueeBox.classList.remove('show');
+    marqueeBox.style.width = '0px';
+    marqueeBox.style.height = '0px';
+    
+    if(State.selectedIds.length > 0){
+      updateInspector();
+      toast(`Выделено клипов: ${State.selectedIds.length}`);
+    }
+  }
+});
+
+// Клик по пустому месту (не сработал marquee) — прокрутка плейхеда
+tlScroll.addEventListener('click', (e) => {
+  if(e.target.closest('.clip')) return;
+  if(marqueeActive) return;
+  if(State.tool === 'cut') return;
+  // Если клик был перетаскиванием — не делаем seek
+  if(marqueeStart) return;
+  const rect = tlScroll.getBoundingClientRect();
+  seekTo(Math.max(0, (e.clientX - rect.left + tlScroll.scrollLeft) / State.pixelsPerSec));
+});
 
 /* ============================================================
    INSPECTOR
    ============================================================ */
-function selectClip(id){ State.selectedId = id; renderTimeline(); updateInspector(); }
+function selectClip(id){
+  State.selectedId = id;
+  State.selectedIds = [id];
+  renderTimeline();
+  updateInspector();
+}
 
 function updateInspector(){
-  const c = getSelectedClip();
-  if(!c){ $('inspEmpty').style.display = 'block'; $('inspContent').style.display = 'none'; return; }
-  $('inspEmpty').style.display = 'none'; $('inspContent').style.display = 'block';
+  const selected = getSelectedClips();
+  if(selected.length === 0){
+    $('inspEmpty').style.display = 'block';
+    $('inspContent').style.display = 'none';
+    return;
+  }
+
+  // Если несколько выделено — показываем общую инфу
+  if(selected.length > 1){
+    $('inspEmpty').style.display = 'block';
+    $('inspEmpty').innerHTML = `<div style="font-size:14px;font-weight:700;color:var(--acc);margin-bottom:8px">${selected.length} клипов выделено</div>
+      <div style="font-size:11px;color:var(--txt-3);line-height:1.6">Можно перемещать, удалять (Del), дублировать (Ctrl+D).<br>Общие настройки — ниже.</div>`;
+    $('inspContent').style.display = 'none';
+    return;
+  }
+
+  const c = selected[0];
+  $('inspEmpty').style.display = 'none';
+  $('inspContent').style.display = 'block';
   const isFx = c.track === 'fx';
   $('trimBlock').style.display = isFx ? 'none' : 'block';
   $('videoPropsBlock').style.display = isFx ? 'none' : 'block';
@@ -2109,7 +2296,8 @@ function updateInspector(){
       $('pSepia').value = c.fx.sepia; $('vSepia').textContent = c.fx.sepia;
       $('pOpacity').value = c.fx.opacity; $('vOpacity').textContent = c.fx.opacity;
     }
-    $('pVolume').value = Math.round(c.volume*100); $('vVolume').textContent = Math.round(c.volume*100);
+    $('pVolume').value = Math.round((c.volume || 1) * 100); $('vVolume').textContent = Math.round((c.volume || 1) * 100);
+    $('pPan').value = Math.round((c.pan || 0) * 100); $('vPan').textContent = Math.round((c.pan || 0) * 100);
     $('pFadeIn').value = Math.round(c.fadeIn*1000); $('vFadeIn').textContent = (c.fadeIn*1000).toFixed(0);
     $('pFadeOut').value = Math.round(c.fadeOut*1000); $('vFadeOut').textContent = (c.fadeOut*1000).toFixed(0);
     $('pLoop').checked = !!c.loop;
@@ -2146,6 +2334,7 @@ function bindInspector(){
   bindFx('pSepia','vSepia','sepia');
   bindFx('pOpacity','vOpacity','opacity');
   $('pVolume').oninput = e => { const c = getSelectedClip(); if(!c) return; c.volume = parseInt(e.target.value)/100; $('vVolume').textContent = e.target.value; };
+  $('pPan').oninput = e => { const c = getSelectedClip(); if(!c) return; c.pan = parseInt(e.target.value)/100; $('vPan').textContent = e.target.value; };
   $('pFadeIn').oninput = e => { const c = getSelectedClip(); if(!c) return; c.fadeIn = parseInt(e.target.value)/1000; $('vFadeIn').textContent = e.target.value; };
   $('pFadeOut').oninput = e => { const c = getSelectedClip(); if(!c) return; c.fadeOut = parseInt(e.target.value)/1000; $('vFadeOut').textContent = e.target.value; };
   $('pLoop').onchange = e => { const c = getSelectedClip(); if(!c) return; c.loop = e.target.checked; snapshot(); renderAll(); };
@@ -2291,12 +2480,12 @@ function buildSfx(){
 function addSfxToTimeline(sfxId, dur){
   const clip = {
     id: uid(), mediaId: null, track: 'audio', start: State.playhead,
-    in: 0, out: dur, speed: 1, volume: 1,
+    in: 0, out: dur, speed: 1, volume: 1, pan: 0,
     name: '🔊 ' + sfxId, type: 'sfx', sfx: sfxId,
     fx: {brightness:100, contrast:100, saturate:100, hue:0, blur:0, sepia:0, opacity:100, grayscale:0, invert:0},
     fadeIn: 0, fadeOut: 0, transIn: null, transOut: null, title: null
   };
-  State.clips.push(clip); State.selectedId = clip.id;
+  State.clips.push(clip); State.selectedId = clip.id; State.selectedIds = [clip.id];
   snapshot(); renderAll(); toast(`SFX: ${sfxId}`, 'ok');
 }
 
@@ -2308,7 +2497,7 @@ function renderAll(){
 }
 
 /* ============================================================
-   SAVE / LOAD (FIXED!)
+   SAVE / LOAD
    ============================================================ */
 function serializeProject(){
   return {
@@ -2344,9 +2533,7 @@ async function saveProject(silent = false){
   }
 }
 
-/* ✅ ГЛАВНЫЙ ФИКС — загрузка проекта с восстановлением видео */
 async function loadProject(id, silent = false){
-  // 1. Читаем сам проект
   let proj = null;
   if(FS.dirHandle){
     try { proj = await FS.loadProjectFromDisk(id); } catch(e){ console.warn('Не удалось прочитать с диска', e); }
@@ -2354,33 +2541,24 @@ async function loadProject(id, silent = false){
   if(!proj) proj = LS.get(id);
   if(!proj){ toast('Проект не найден', 'err'); return; }
 
-  // 2. Если папка не открыта — пробуем восстановить доступ
   if(!FS.dirHandle && FS.hasFS){
-    const hasPending = !!FS._pendingHandle;
-    // Попробуем запросить разрешение у сохранённого handle
     const gotPending = await FS.requestPendingAccess().catch(()=>false);
     if(!gotPending){
-      // Показываем баннер "открыть папку"
       $('restoreBanner').classList.add('show');
       toast('Папка не открыта — видео может не загрузиться', 'warn');
     }
   }
 
-  // 3. Загружаем медиа
   const newMedia = [];
   let missingCount = 0;
   let restoredFromLibrary = 0;
 
   for(const m of (proj.media || [])){
     let file = null;
-
-    // Пробуем с диска
     if(FS.dirHandle && m.diskName){
       try { file = await FS.readFile('media', m.diskName); }
       catch(e){ console.warn('Файл не найден на диске:', m.diskName); }
     }
-
-    // Если нет файла — пробуем найти в текущей медиатеке по имени
     if(!file){
       const found = State.media.find(lib => lib.name === m.name && lib.file);
       if(found){
@@ -2388,17 +2566,13 @@ async function loadProject(id, silent = false){
         restoredFromLibrary++;
       }
     }
-
     if(!file){
-      // Всё равно нет — пустышка
       newMedia.push({ ...m, file: null, url: '', el: null, missing: true });
       missingCount++;
       continue;
     }
-
     const url = URL.createObjectURL(file);
     let el, width, height, duration, thumb;
-
     if(m.type === 'image'){
       el = new Image(); el.src = url;
       await new Promise(r => { el.onload = r; el.onerror = r; });
@@ -2418,7 +2592,6 @@ async function loadProject(id, silent = false){
       height = el.videoHeight || 0;
       thumb = m.thumb || '';
     }
-
     newMedia.push({
       id: m.id, type: m.type, name: m.name,
       file, url, duration: m.duration || duration,
@@ -2429,7 +2602,6 @@ async function loadProject(id, silent = false){
     });
   }
 
-  // 4. Применяем
   State.media = newMedia;
   State.clips = proj.clips || [];
   State.projectName = proj.name;
@@ -2437,13 +2609,12 @@ async function loadProject(id, silent = false){
   State.projectW = proj.projectW || 1280;
   State.projectH = proj.projectH || 720;
   State.fps = proj.fps || 30;
-  State.selectedId = null;
+  State.selectedId = null; State.selectedIds = [];
   State.playhead = 0;
   markSaved();
 
   enterEditor();
 
-  // 5. Показываем результат
   if(missingCount > 0){
     const stillMissing = newMedia.filter(m => m.missing).length;
     if(stillMissing > 0){
@@ -2553,7 +2724,7 @@ async function createNewProject(){
 
   State.media = [];
   State.clips = [];
-  State.selectedId = null;
+  State.selectedId = null; State.selectedIds = [];
   State.playhead = 0;
   State.history = [];
   State.historyIdx = -1;
@@ -2710,6 +2881,7 @@ function bindTitleModal(){
       if(!c || c.track !== 'video'){ toast('Выберите видео-клип', 'warn'); return; }
       c.title = titleObj;
       State.selectedId = c.id;
+      State.selectedIds = [c.id];
     }
 
     $('titleModal').classList.remove('show');
@@ -2754,7 +2926,7 @@ async function startAIMontage(){
 
   State.media = [];
   State.clips = [];
-  State.selectedId = null;
+  State.selectedId = null; State.selectedIds = [];
   State.playhead = 0;
   State.history = [];
   State.historyIdx = -1;
@@ -2861,7 +3033,7 @@ async function runAIMontage(videoMedia, onProgress){
     if(outT - inT < 0.1) return;
     newClips.push({
       id: uid(), mediaId: m.id, track: 'video', start: cursor,
-      in: inT, out: outT, speed: 1, volume: 1,
+      in: inT, out: outT, speed: 1, volume: 1, pan: 0,
       name: m.name.replace(/\.[^.]+$/, ''), type: m.type,
       fx: {brightness:100,contrast:100,saturate:100,hue:0,blur:0,sepia:0,opacity:100,grayscale:0,invert:0, ...(modeConfig.colorFx||{})},
       fadeIn: 0, fadeOut: 0, transIn: null, transOut: null, title: null, sfx: null, loop: false
@@ -2912,7 +3084,8 @@ async function runAIMontage(videoMedia, onProgress){
   await sleep(50);
 
   State.clips = [...newClips, ...fxClips];
-  State.selectedId = null; State.playhead = 0;
+  State.selectedId = null; State.selectedIds = [];
+  State.playhead = 0;
   markUnsaved();
   onProgress(100, 'Готово');
   renderAll();
@@ -3110,7 +3283,7 @@ function bindUI(){
     if(State.clips.length === 0) return;
     if(!confirm('Удалить все клипы?')) return;
     SFXPlayer.stopAll();
-    State.clips = []; State.selectedId = null;
+    State.clips = []; State.selectedId = null; State.selectedIds = [];
     snapshot(); renderAll(); toast('Очищено');
   };
 
@@ -3128,13 +3301,6 @@ function bindUI(){
       $('scaleRange').value = newVal; setZoom(newVal);
     }
   }, {passive:false});
-
-  $('tlScroll').addEventListener('mousedown', e=>{
-    if(e.target.closest('.clip')) return;
-    if(State.tool === 'cut') return;
-    const rect = $('tlScroll').getBoundingClientRect();
-    seekTo(Math.max(0, (e.clientX - rect.left + $('tlScroll').scrollLeft) / State.pixelsPerSec));
-  });
 
   bindInspector();
   bindTitleModal();
@@ -3164,9 +3330,19 @@ function bindUI(){
     else if(e.key === 'ArrowRight') seekTo(State.playhead + 1/State.fps);
     else if(e.key === 's' || e.key === 'S') $('btnSplit').click();
     else if(e.key === 'Delete' || e.key === 'Backspace') deleteSelected();
+    else if((e.ctrlKey || e.metaKey) && e.key === 'a'){
+      e.preventDefault();
+      State.selectedIds = State.clips.map(c => c.id);
+      State.selectedId = State.selectedIds[0] || null;
+      renderTimeline(); updateInspector();
+    }
     else if((e.ctrlKey || e.metaKey) && e.key === 'z'){ e.preventDefault(); undo(); }
     else if((e.ctrlKey || e.metaKey) && e.key === 'd'){ e.preventDefault(); duplicateSelected(); }
     else if((e.ctrlKey || e.metaKey) && e.key === 's'){ e.preventDefault(); saveProject(); }
+    else if(e.key === 'Escape'){
+      State.selectedId = null; State.selectedIds = [];
+      renderTimeline(); updateInspector();
+    }
   });
 
   window.addEventListener('beforeunload', e => {
@@ -3195,7 +3371,6 @@ async function init(){
 
   try { await FS.restoreHandle(); } catch(e){ console.warn(e); }
 
-  // Показать баннер если есть pending access
   if(FS._pendingHandle && !FS.dirHandle){
     $('restoreBanner').classList.add('show');
   }
