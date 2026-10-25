@@ -1,11 +1,821 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProCut Studio</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Montserrat:wght@400;700;900&family=Bebas+Neue&family=Oswald:wght@400;700&family=Roboto:wght@400;700;900&family=Playfair+Display:wght@400;700;900&family=Pacifico&family=Caveat:wght@400;700&family=Lobster&family=Permanent+Marker&family=Press+Start+2P&family=Russo+One&family=Bad+Script&family=Marck+Script&family=Comfortaa:wght@400;700&family=Amatic+SC:wght@400;700&family=Neucha&family=Pangolin&family=Yeseva+One&family=Underdog&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#0a0b0f;--bg-1:#12141a;--bg-2:#181b23;--bg-3:#1f232d;
+  --line:#252a35;--line-2:#2e3440;
+  --txt:#eaeef7;--txt-2:#9aa3b8;--txt-3:#5c6478;
+  --acc:#5b8cff;--acc-2:#7c5bff;
+  --ok:#22c55e;--warn:#f59e0b;--err:#ef4444;
+  --r:8px;--sh:0 8px 32px rgba(0,0,0,.6);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg-0);color:var(--txt);overflow:hidden;font-size:13px;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:var(--bg-1)}
+::-webkit-scrollbar-thumb{background:var(--bg-3);border-radius:5px;border:2px solid var(--bg-1)}
+::-webkit-scrollbar-thumb:hover{background:var(--line-2)}
+
+/* ============ LAUNCHER ============ */
+.launcher{position:fixed;inset:0;z-index:500;background:var(--bg-0);display:grid;grid-template-rows:auto 1fr;overflow:hidden}
+.launcher.hidden{display:none}
+.launcher-head{padding:18px 32px;background:var(--bg-1);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px}
+.logo{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:800;letter-spacing:.5px}
+.logo .dot{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--acc),var(--acc-2));display:grid;place-items:center;font-size:15px}
+.launcher-head .spacer{flex:1}
+.folder-btn{display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:8px;background:var(--bg-3);color:var(--txt-2);font-size:12px;font-weight:600;border:1px solid var(--line-2);transition:.15s}
+.folder-btn:hover{background:var(--bg-2);color:var(--txt);border-color:var(--acc)}
+.folder-name{font-size:11px;color:var(--txt-3);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.launcher-body{overflow-y:auto;padding:36px}
+.launcher-section{margin-bottom:28px}
+.launcher-section-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt-3);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.launcher-section-title .cnt{background:var(--bg-3);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;color:var(--txt-2);letter-spacing:0;text-transform:none}
+
+.new-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.new-btn{display:flex;align-items:center;gap:16px;padding:20px 22px;border-radius:12px;color:var(--txt);text-align:left;transition:.15s;cursor:pointer}
+.new-btn:hover{transform:translateY(-2px)}
+.new-btn .ico{width:52px;height:52px;border-radius:13px;display:grid;place-items:center;font-size:24px;flex-shrink:0}
+.new-btn .info h3{font-size:14.5px;font-weight:700;margin-bottom:3px}
+.new-btn .info p{font-size:11px;color:var(--txt-2);line-height:1.4}
+.new-btn.b1{background:linear-gradient(135deg,rgba(91,140,255,.1),rgba(124,91,255,.1));border:2px solid rgba(91,140,255,.3)}
+.new-btn.b1:hover{border-color:var(--acc);box-shadow:0 8px 24px rgba(91,140,255,.2)}
+.new-btn.b1 .ico{background:linear-gradient(135deg,var(--acc),var(--acc-2))}
+.new-btn.b2{background:linear-gradient(135deg,rgba(139,92,246,.1),rgba(236,72,153,.1));border:2px solid rgba(139,92,246,.3)}
+.new-btn.b2:hover{border-color:#8b5cf6;box-shadow:0 8px 24px rgba(139,92,246,.2)}
+.new-btn.b2 .ico{background:linear-gradient(135deg,#8b5cf6,#ec4899)}
+.new-btn.b3{background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(239,68,68,.1));border:2px solid rgba(245,158,11,.3)}
+.new-btn.b3:hover{border-color:#f59e0b;box-shadow:0 8px 24px rgba(245,158,11,.2)}
+.new-btn.b3 .ico{background:linear-gradient(135deg,#f59e0b,#ef4444)}
+
+.projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.project-card{background:var(--bg-1);border:1px solid var(--line-2);border-radius:12px;overflow:hidden;cursor:pointer;transition:.15s;display:flex;flex-direction:column}
+.project-card:hover{transform:translateY(-3px);border-color:var(--acc);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.project-card .thumb{width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#3b4d8a,#7c5bff);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.3);font-size:42px}
+.project-card .thumb img{width:100%;height:100%;object-fit:cover}
+.project-card .thumb .cnt-badge{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.7);color:#fff;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;backdrop-filter:blur(4px)}
+.project-card .pinfo{padding:10px 12px;flex:1}
+.project-card .pinfo .ptitle{font-size:13px;font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.project-card .pinfo .pdate{font-size:10.5px;color:var(--txt-3)}
+.project-card .pactions{display:flex;gap:4px;padding:0 10px 10px}
+.project-card .pactions button{flex:1;padding:6px;border-radius:6px;font-size:10.5px;font-weight:600;background:var(--bg-3);color:var(--txt-2);transition:.15s}
+.project-card .pactions button:hover{background:var(--acc);color:#fff}
+.project-card .pactions button.danger:hover{background:var(--err)}
+
+.empty-launcher{text-align:center;padding:60px 20px;color:var(--txt-3)}
+.empty-launcher .big-ico{font-size:64px;opacity:.2;margin-bottom:14px}
+.empty-launcher h3{font-size:16px;color:var(--txt-2);margin-bottom:8px}
+.empty-launcher p{font-size:12px;line-height:1.6;max-width:400px;margin:0 auto}
+
+/* ============ EDITOR ============ */
+.app{display:none;grid-template-rows:48px 1fr 300px;height:100vh}
+.app.active{display:grid}
+
+.topbar{display:flex;align-items:center;gap:6px;padding:0 12px;background:var(--bg-1);border-bottom:1px solid var(--line);overflow-x:auto}
+.back-btn{width:32px;height:32px;border-radius:6px;background:var(--bg-3);color:var(--txt-2);display:grid;place-items:center;font-size:15px;flex-shrink:0}
+.back-btn:hover{background:var(--acc);color:#fff}
+.proj-title{font-size:12.5px;font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 8px;cursor:pointer}
+.proj-title:hover{color:var(--acc)}
+.sep{width:1px;height:24px;background:var(--line);flex-shrink:0}
+.tbtn{display:flex;align-items:center;gap:5px;padding:6px 9px;border-radius:6px;color:var(--txt-2);font-size:11.5px;font-weight:500;transition:.15s;white-space:nowrap}
+.tbtn:hover{background:var(--bg-3);color:var(--txt)}
+.tbtn:disabled{opacity:.35;cursor:not-allowed}
+.tbtn.primary{background:linear-gradient(135deg,var(--acc),var(--acc-2));color:#fff}
+.tbtn.primary:hover{filter:brightness(1.1)}
+.tbtn.ai{background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;font-weight:600}
+.tbtn.ai:hover{filter:brightness(1.15)}
+.tbtn.thumb{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-weight:600}
+.topbar .spacer{flex:1}
+.badge{padding:3px 8px;border-radius:20px;font-size:10.5px;background:var(--bg-3);color:var(--txt-2);border:1px solid var(--line-2);white-space:nowrap}
+.save-ind{color:var(--warn);font-size:10.5px;font-weight:600;display:none}
+.save-ind.show{display:inline}
+
+.main{display:grid;grid-template-columns:240px 1fr 300px;overflow:hidden}
+
+.left-panel{background:var(--bg-1);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+.tabs{display:flex;background:var(--bg-2);border-bottom:1px solid var(--line);flex-shrink:0;overflow-x:auto}
+.tab{flex:1;padding:10px 4px;text-align:center;font-size:9.5px;font-weight:600;color:var(--txt-3);cursor:pointer;transition:.15s;letter-spacing:.3px;text-transform:uppercase;border-bottom:2px solid transparent;white-space:nowrap;min-width:48px}
+.tab:hover{color:var(--txt-2);background:var(--bg-3)}
+.tab.active{color:var(--acc);border-bottom-color:var(--acc);background:var(--bg-1)}
+.tab-content{flex:1;overflow-y:auto;display:none}
+.tab-content.active{display:block}
+
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line);font-size:10.5px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--txt-2)}
+.panel-head .count{background:var(--bg-3);padding:2px 7px;border-radius:10px;font-size:10px;color:var(--txt-2)}
+.mini-btn{padding:3px 7px;border-radius:4px;background:var(--bg-3);color:var(--txt-2);font-size:10px}
+.mini-btn:hover{background:var(--acc);color:#fff}
+
+.dropzone{margin:10px;padding:16px 10px;border:2px dashed var(--line-2);border-radius:var(--r);text-align:center;cursor:pointer;transition:.2s;color:var(--txt-2)}
+.dropzone:hover,.dropzone.over{border-color:var(--acc);background:rgba(91,140,255,.06);color:var(--txt)}
+.dropzone .ico{font-size:26px;margin-bottom:6px;opacity:.6}
+.dropzone p{font-size:11.5px;font-weight:500}
+.dropzone small{font-size:10px;color:var(--txt-3);display:block;margin-top:3px}
+
+.media-list{padding:0 8px 12px;display:flex;flex-direction:column;gap:5px}
+.media-item{display:flex;gap:8px;padding:6px;background:var(--bg-2);border-radius:5px;cursor:pointer;border:1px solid transparent;transition:.15s}
+.media-item:hover{background:var(--bg-3);border-color:var(--line-2)}
+.media-item img,.media-item .no-thumb{width:56px;height:34px;object-fit:cover;border-radius:4px;background:linear-gradient(135deg,#3b4d8a,#7c5bff);flex-shrink:0;display:grid;place-items:center;font-size:14px}
+.media-item .meta{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.media-item .meta .name{font-size:11.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.media-item .meta .info{font-size:10px;color:var(--txt-3);margin-top:1px}
+.media-item .add{width:22px;height:22px;border-radius:4px;background:var(--bg-3);color:var(--txt-2);display:grid;place-items:center;font-size:14px;align-self:center;transition:.15s}
+.media-item .add:hover{background:var(--acc);color:#fff}
+.media-item .del{width:22px;height:22px;border-radius:4px;background:var(--bg-3);color:var(--txt-3);display:grid;place-items:center;font-size:11px;align-self:center;transition:.15s}
+.media-item .del:hover{background:var(--err);color:#fff}
+
+.fx-cat{padding:8px 10px;background:var(--bg-2);border-bottom:1px solid var(--line);font-size:10px;font-weight:700;color:var(--txt-2);letter-spacing:.5px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.fx-cat:hover{background:var(--bg-3)}
+.fx-cat .arrow{font-size:9px;color:var(--txt-3);transition:.2s}
+.fx-cat.collapsed .arrow{transform:rotate(-90deg)}
+.fx-cat-items{padding:6px;display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.fx-cat-items.hidden{display:none}
+.qfx{background:var(--bg-2);border:1px solid var(--line-2);border-radius:5px;padding:8px 4px;text-align:center;cursor:pointer;transition:.15s;font-size:10px;color:var(--txt-2);line-height:1.2}
+.qfx:hover{background:var(--bg-3);border-color:var(--warn);color:var(--txt);transform:translateY(-1px)}
+.qfx .ico{font-size:16px;display:block;margin-bottom:3px}
+
+.preset-list{padding:10px;display:flex;flex-direction:column;gap:6px}
+.preset{background:var(--bg-2);border:1px solid var(--line-2);border-radius:6px;padding:10px 12px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:10px}
+.preset:hover{background:var(--bg-3);border-color:var(--acc);transform:translateX(2px)}
+.preset .swatch{width:32px;height:32px;border-radius:6px;flex-shrink:0}
+.preset .pinfo{flex:1}
+.preset .pinfo b{font-size:12px;display:block}
+.preset .pinfo small{font-size:10px;color:var(--txt-3)}
+
+.trans-list{padding:10px;display:flex;flex-direction:column;gap:5px}
+.trans-item{background:var(--bg-2);border:1px solid var(--line-2);border-radius:6px;padding:10px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:10px}
+.trans-item:hover{background:var(--bg-3);border-color:var(--acc)}
+.trans-item .tprev{width:56px;height:32px;border-radius:4px;background:linear-gradient(90deg,#3b4d8a,#7c5bff);flex-shrink:0}
+.trans-item .tinfo{flex:1}
+.trans-item .tinfo b{font-size:12px}
+.trans-item .tinfo small{font-size:10px;color:var(--txt-3);display:block;margin-top:1px}
+
+.sfx-list{padding:10px;display:flex;flex-direction:column;gap:5px}
+.sfx-item{background:var(--bg-2);border:1px solid var(--line-2);border-radius:6px;padding:8px 10px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:8px}
+.sfx-item:hover{background:var(--bg-3);border-color:var(--acc)}
+.sfx-item .play-ico{width:26px;height:26px;border-radius:50%;background:var(--bg-3);display:grid;place-items:center;color:var(--acc);flex-shrink:0;font-size:10px;user-select:none}
+.sfx-item .play-ico:hover{background:var(--acc);color:#fff}
+.sfx-item .sinfo{flex:1;min-width:0}
+.sfx-item .sinfo b{font-size:11.5px;display:block}
+.sfx-item .sinfo small{font-size:9.5px;color:var(--txt-3)}
+.sfx-item .add-ico{width:22px;height:22px;border-radius:4px;background:var(--bg-3);color:var(--txt-2);display:grid;place-items:center;font-size:13px}
+.sfx-item .add-ico:hover{background:var(--acc);color:#fff}
+
+.sticker-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:8px}
+.sticker-btn{background:var(--bg-2);border:1px solid var(--line-2);border-radius:6px;padding:8px 4px;text-align:center;cursor:pointer;transition:.15s;font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;aspect-ratio:1}
+.sticker-btn:hover{background:var(--bg-3);border-color:var(--acc);transform:scale(1.08)}
+
+.sticker-cat{padding:8px 10px;background:var(--bg-2);border-bottom:1px solid var(--line);font-size:10px;font-weight:700;color:var(--txt-2);letter-spacing:.5px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.sticker-cat:hover{background:var(--bg-3)}
+.sticker-cat .arrow{font-size:9px;color:var(--txt-3);transition:.2s}
+.sticker-cat.collapsed .arrow{transform:rotate(-90deg)}
+
+/* CENTER */
+.center{display:flex;flex-direction:column;background:var(--bg-0);overflow:hidden}
+.preview-wrap{flex:1;display:grid;place-items:center;padding:14px;overflow:hidden;position:relative;background:#000}
+.preview-stage{position:relative;background:#000;border-radius:var(--r);box-shadow:var(--sh);max-width:100%;max-height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.preview-stage video,.preview-stage canvas{display:block;max-width:100%;max-height:100%}
+.preview-stage canvas.overlay-canvas{position:absolute;inset:0;pointer-events:none}
+
+.preview-empty{text-align:center;color:var(--txt-3);padding:40px}
+.preview-empty .ico{font-size:52px;opacity:.3;margin-bottom:10px}
+.preview-empty p{font-size:13px}
+.preview-empty small{font-size:11px;opacity:.7;display:block;margin-top:4px}
+
+.transport{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg-1);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.btn-play{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc-2));color:#fff;display:grid;place-items:center;transition:.15s;font-size:13px}
+.btn-play:hover{transform:scale(1.08)}
+.btn-play:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.btn-skip{width:26px;height:26px;border-radius:5px;display:grid;place-items:center;color:var(--txt-2);font-size:13px;transition:.15s}
+.btn-skip:hover{background:var(--bg-3);color:var(--txt)}
+.time-display{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--txt-2);letter-spacing:.5px;min-width:130px}
+.time-display b{color:var(--txt)}
+.zoom{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--txt-2);font-size:11px}
+.zoom input{width:90px;accent-color:var(--acc)}
+
+/* INSPECTOR */
+.inspector{background:var(--bg-1);border-left:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+.insp-body{flex:1;overflow-y:auto;padding:12px}
+.insp-empty{color:var(--txt-3);text-align:center;padding:40px 16px;font-size:12px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:10.5px;font-weight:600;color:var(--txt-2);margin-bottom:5px;letter-spacing:.3px;text-transform:uppercase}
+.field input[type=text],.field input[type=number],.field select,.field textarea{width:100%;padding:6px 9px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:5px;color:var(--txt);font-size:12px;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--acc)}
+.field textarea{resize:vertical;min-height:60px;font-family:inherit}
+
+.trim-track{position:relative;height:24px;background:var(--bg-2);border-radius:5px;margin-bottom:6px;overflow:hidden;border:1px solid var(--line-2)}
+.trim-track .range{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,rgba(91,140,255,.4),rgba(124,91,255,.4));border-left:2px solid var(--acc);border-right:2px solid var(--acc)}
+.trim-nums{display:flex;gap:6px;margin-bottom:10px}
+.trim-nums .box{flex:1;background:var(--bg-2);border:1px solid var(--line-2);border-radius:5px;padding:5px 7px}
+.trim-nums .box span{display:block;font-size:9px;color:var(--txt-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.trim-nums .box input{width:100%;background:none;border:none;color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none}
+
+.speed-row{display:flex;gap:3px;margin-bottom:8px}
+.speed-row button{flex:1;padding:5px 3px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:4px;color:var(--txt-2);font-size:10.5px;font-weight:600;transition:.15s}
+.speed-row button:hover{background:var(--bg-3);color:var(--txt)}
+.speed-row button.active{background:var(--acc);border-color:var(--acc);color:#fff}
+
+.prop-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.prop-grid .prop{background:var(--bg-2);border-radius:5px;padding:6px 8px;border:1px solid var(--line-2)}
+.prop-grid .prop span{display:block;font-size:9px;color:var(--txt-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.prop-grid .prop b{font-size:11.5px;font-weight:600}
+
+.slider-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.slider-row label{font-size:10.5px;color:var(--txt-2);min-width:70px}
+.slider-row input[type=range]{flex:1;accent-color:var(--acc)}
+.slider-row .val{font-size:10.5px;color:var(--txt-3);font-family:monospace;min-width:34px;text-align:right}
+
+.fx-applied{background:var(--bg-2);border:1px solid var(--line-2);border-radius:5px;padding:6px 8px;margin-bottom:6px;display:flex;align-items:center;gap:6px;font-size:11px}
+.fx-applied .name{flex:1}
+.fx-applied .rm{width:18px;height:18px;border-radius:3px;background:var(--bg-3);color:var(--err);display:grid;place-items:center;font-size:11px;cursor:pointer}
+.fx-applied .rm:hover{background:var(--err);color:#fff}
+
+.section-title{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--txt-3);margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+
+.font-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;max-height:200px;overflow-y:auto;padding-right:4px}
+.font-btn{background:var(--bg-2);border:1px solid var(--line-2);border-radius:5px;padding:8px 6px;cursor:pointer;transition:.15s;text-align:center;color:var(--txt);font-size:14px;line-height:1.2;min-height:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.font-btn:hover{background:var(--bg-3);border-color:var(--acc)}
+.font-btn.active{border-color:var(--acc);background:rgba(91,140,255,.15)}
+.font-btn .font-name{font-size:13px;font-weight:700;line-height:1.1}
+.font-btn small{font-size:8.5px;color:var(--txt-3);display:block;margin-top:3px;font-family:'Inter',sans-serif}
+
+.align-row{display:flex;gap:4px;margin-bottom:8px}
+.align-btn{flex:1;padding:7px 4px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:4px;color:var(--txt-2);font-size:14px;transition:.15s}
+.align-btn:hover{background:var(--bg-3);color:var(--txt)}
+.align-btn.active{background:var(--acc);border-color:var(--acc);color:#fff}
+
+.color-row{display:flex;gap:6px}
+.color-row input[type=color]{width:40px;height:32px;border:1px solid var(--line-2);border-radius:5px;background:var(--bg-2);cursor:pointer;padding:2px}
+.color-row input[type=text]{flex:1}
+
+/* ============ TIMELINE ============ */
+.timeline{background:var(--bg-1);border-top:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden;position:relative}
+.tl-toolbar{display:flex;align-items:center;gap:4px;padding:5px 10px;border-bottom:1px solid var(--line);background:var(--bg-2)}
+.tl-btn{padding:5px 9px;border-radius:4px;font-size:11px;color:var(--txt-2);display:flex;align-items:center;gap:4px;transition:.15s}
+.tl-btn:hover{background:var(--bg-3);color:var(--txt)}
+.tl-btn.active{background:var(--acc);color:#fff}
+.tl-btn.danger:hover{background:var(--err);color:#fff}
+.tl-toolbar .spacer{flex:1}
+.tl-toolbar .scale{display:flex;align-items:center;gap:5px;color:var(--txt-3);font-size:10.5px}
+.tl-toolbar input[type=range]{width:80px;accent-color:var(--acc)}
+
+.tl-body{flex:1;display:flex;overflow:hidden;position:relative}
+.tl-labels{width:60px;background:var(--bg-2);border-right:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0}
+.tl-label-head{height:22px;border-bottom:1px solid var(--line)}
+.tl-label{height:48px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 6px;font-size:9px;color:var(--txt-3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;gap:4px}
+.tl-label .ic{width:12px;height:12px;border-radius:3px;display:grid;place-items:center;font-size:7px}
+.tl-label.stickers .ic{background:rgba(236,72,153,.2);color:#ec4899}
+.tl-label.fx .ic{background:rgba(245,158,11,.2);color:var(--warn)}
+.tl-label.video .ic{background:rgba(91,140,255,.2);color:var(--acc)}
+.tl-label.audio .ic{background:rgba(34,197,94,.2);color:var(--ok)}
+.tl-label.music .ic{background:rgba(245,158,11,.2);color:var(--warn)}
+
+.tl-scroll{flex:1;overflow-x:auto;overflow-y:hidden;position:relative}
+.tl-ruler{height:22px;background:var(--bg-2);border-bottom:1px solid var(--line);position:relative;min-width:100%}
+.tl-ruler .mark{position:absolute;top:0;bottom:0;border-left:1px solid var(--line-2);font-size:9px;color:var(--txt-3);padding-left:3px;padding-top:4px;font-family:'JetBrains Mono',monospace}
+.tl-ruler .mark.minor{border-color:rgba(52,59,77,.5);padding-top:8px;font-size:8px}
+
+.tl-tracks{position:relative;min-width:100%}
+.tl-track{height:48px;border-bottom:1px solid var(--line);position:relative;background:var(--bg-0)}
+.tl-track.stickers,.tl-track.fx,.tl-track.video,.tl-track.audio,.tl-track.music{background:repeating-linear-gradient(90deg,transparent,transparent 50px,rgba(42,47,61,.3) 50px,rgba(42,47,61,.3) 51px)}
+
+.marquee-box{position:absolute;border:1.5px dashed var(--acc);background:rgba(91,140,255,.1);pointer-events:none;z-index:100;display:none;border-radius:2px}
+.marquee-box.show{display:block}
+
+.clip{position:absolute;top:3px;height:42px;border-radius:5px;overflow:hidden;cursor:grab;transition:box-shadow .1s;border:1px solid rgba(255,255,255,.1);user-select:none}
+.clip:hover{box-shadow:0 0 0 2px rgba(91,140,255,.5)}
+.clip.selected{box-shadow:0 0 0 2px var(--acc),0 4px 16px rgba(91,140,255,.4);z-index:5}
+.clip.selected-multi{box-shadow:0 0 0 2px var(--acc-2),0 4px 16px rgba(124,91,255,.4);z-index:5}
+.clip.video-clip{background:linear-gradient(180deg,#3b4d8a,#2d3a6b)}
+.clip.audio-clip{background:linear-gradient(180deg,#1e6b3d,#164d2c)}
+.clip.music-clip{background:linear-gradient(180deg,#7a5a1e,#5a4316)}
+.clip.fx-clip{background:linear-gradient(180deg,#a06b1a,#6e4712)}
+.clip.particle-clip{background:linear-gradient(180deg,#3d5c7a,#254058)}
+.clip.sticker-clip{background:linear-gradient(180deg,#a83279,#6d1f4e)}
+.clip.missing{opacity:.55;background:linear-gradient(180deg,#7a1a1a,#5a1212)!important}
+.clip.missing::after{content:'⚠ нет файла';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(239,68,68,.9);color:#fff;padding:2px 6px;border-radius:3px;font-size:8px;font-weight:700;z-index:10;white-space:nowrap}
+.clip .clip-thumb{position:absolute;inset:0;opacity:.35;background-size:auto 100%;background-repeat:repeat-x;pointer-events:none}
+.clip .clip-label{position:relative;z-index:2;padding:3px 5px;font-size:10px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}
+.clip .badge-t{position:absolute;top:3px;right:4px;z-index:3;background:rgba(139,92,246,.9);color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:700;pointer-events:none}
+.clip .badge-loop{position:absolute;top:3px;left:4px;z-index:3;background:rgba(34,197,94,.9);color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:700;pointer-events:none}
+.clip .clip-trans{position:absolute;top:0;bottom:0;width:16px;z-index:3;background:repeating-linear-gradient(45deg,rgba(255,255,255,.3),rgba(255,255,255,.3) 3px,transparent 3px,transparent 6px);pointer-events:none}
+.clip .clip-trans.left{left:0;border-radius:5px 0 0 5px}
+.clip .clip-trans.right{right:0;border-radius:0 5px 5px 0}
+.clip .clip-dur{position:absolute;bottom:2px;right:4px;z-index:2;font-size:8.5px;color:rgba(255,255,255,.7);font-family:monospace;pointer-events:none;background:rgba(0,0,0,.4);padding:1px 3px;border-radius:2px}
+.clip .handle{position:absolute;top:0;bottom:0;width:6px;z-index:4;cursor:ew-resize;background:transparent}
+.clip .handle::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:2px;height:12px;background:rgba(255,255,255,.4);border-radius:1px}
+.clip .handle:hover{background:rgba(255,255,255,.15)}
+.clip .handle.left{left:0}
+.clip .handle.right{right:0}
+
+.playhead{position:absolute;top:0;bottom:0;width:2px;background:var(--err);z-index:20;pointer-events:none;box-shadow:0 0 8px rgba(239,68,68,.6)}
+.playhead::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--err)}
+
+/* ============ TOAST ============ */
+.toast{position:fixed;bottom:20px;right:20px;z-index:9999;background:var(--bg-3);color:var(--txt);padding:11px 16px;border-radius:7px;box-shadow:0 10px 40px rgba(0,0,0,.5);border-left:3px solid var(--acc);transform:translateX(400px);transition:transform .3s;font-size:12px;max-width:340px}
+.toast.show{transform:translateX(0)}
+.toast.ok{border-color:var(--ok)}
+.toast.err{border-color:var(--err)}
+.toast.warn{border-color:var(--warn)}
+
+/* ============ PROGRESS ============ */
+.progress-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;place-items:center;z-index:9998;backdrop-filter:blur(6px)}
+.progress-overlay.show{display:grid}
+.progress-card{background:var(--bg-1);padding:26px 32px;border-radius:12px;text-align:center;box-shadow:var(--sh);min-width:340px;border:1px solid var(--line-2)}
+.progress-card h3{font-size:14px;margin-bottom:14px;font-weight:600}
+.progress-card .bar{height:6px;background:var(--bg-3);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.progress-card .bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--acc),var(--acc-2));transition:width .2s;border-radius:3px}
+.progress-card .pct{font-size:11.5px;color:var(--txt-2);font-family:monospace}
+.progress-card .stage{font-size:11px;color:var(--txt-3);margin-top:8px;font-style:italic}
+
+/* ============ MODAL ============ */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;place-items:center;z-index:9997;backdrop-filter:blur(4px)}
+.modal.show{display:grid}
+.modal-card{background:var(--bg-1);border-radius:10px;padding:20px 24px;min-width:380px;max-width:620px;box-shadow:var(--sh);border:1px solid var(--line-2);max-height:90vh;overflow-y:auto}
+.modal-card h3{font-size:14px;margin-bottom:14px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.modal-actions button{padding:7px 14px;border-radius:5px;font-size:12px;font-weight:500}
+.modal-actions .cancel{background:var(--bg-3);color:var(--txt-2)}
+.modal-actions .apply{background:var(--acc);color:#fff}
+
+.restore-banner{position:fixed;top:56px;left:50%;transform:translateX(-50%);background:var(--warn);color:#000;padding:10px 18px;border-radius:8px;z-index:9996;font-weight:600;font-size:12px;display:none;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.restore-banner.show{display:flex}
+.restore-banner button{background:rgba(0,0,0,.2);color:#000;padding:6px 12px;border-radius:6px;font-weight:700;font-size:11px}
+
+/* ============ THUMBNAIL EDITOR PRO ============ */
+.thumb-editor{background:var(--bg-1);border:1px solid var(--line-2);border-radius:12px;max-width:1200px;width:96vw;height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 80px rgba(0,0,0,.7)}
+.thumb-head{display:flex;align-items:center;gap:12px;padding:12px 20px;background:linear-gradient(90deg,rgba(245,158,11,.1),rgba(239,68,68,.1));border-bottom:1px solid var(--line-2);flex-shrink:0}
+.thumb-head h3{background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.thumb-head .spacer{flex:1}
+.thumb-body{flex:1;display:grid;grid-template-columns:1fr 340px;overflow:hidden}
+
+.tc-wrap{background:#0a0a0f;display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;position:relative}
+.tc-container{position:relative;box-shadow:0 10px 40px rgba(0,0,0,.6);border-radius:6px;overflow:hidden;max-width:100%;max-height:100%}
+.tc-container canvas{display:block;max-width:100%;height:auto;cursor:default}
+.tc-container canvas.selecting{cursor:crosshair}
+.thumb-grid-overlay{position:absolute;inset:0;pointer-events:none;display:none}
+.thumb-grid-overlay.show{display:block}
+.thumb-grid-overlay .gl{position:absolute;background:rgba(255,255,255,.15)}
+.thumb-grid-overlay .gl.v{top:0;bottom:0;width:1px}
+.thumb-grid-overlay .gl.h{left:0;right:0;height:1px}
+.thumb-snap{position:absolute;background:var(--acc);pointer-events:none;display:none;z-index:100}
+.thumb-snap.show{display:block}
+.thumb-snap.v{top:0;bottom:0;width:1px}
+.thumb-snap.h{left:0;right:0;height:1px}
+.thumb-sel-frame{position:absolute;border:2px solid var(--acc);pointer-events:none;display:none;z-index:50;box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+.thumb-sel-frame.show{display:block}
+.thumb-sel-frame .handle{position:absolute;width:10px;height:10px;background:var(--acc);border:2px solid #fff;border-radius:50%;pointer-events:auto;cursor:pointer}
+.thumb-sel-frame .handle.tl{top:-6px;left:-6px;cursor:nwse-resize}
+.thumb-sel-frame .handle.tr{top:-6px;right:-6px;cursor:nesw-resize}
+.thumb-sel-frame .handle.bl{bottom:-6px;left:-6px;cursor:nesw-resize}
+.thumb-sel-frame .handle.br{bottom:-6px;right:-6px;cursor:nwse-resize}
+.thumb-sel-frame .handle.rotate{top:-30px;left:50%;transform:translateX(-50%);cursor:grab;background:var(--warn)}
+
+.thumb-props{background:var(--bg-1);border-left:1px solid var(--line);overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.thumb-section{background:var(--bg-2);border-radius:8px;padding:11px;border:1px solid var(--line-2)}
+.thumb-section-title{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--txt-3);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.thumb-section-title .rm{background:rgba(239,68,68,.15);color:var(--err);padding:2px 6px;border-radius:4px;font-size:9px;cursor:pointer}
+.thumb-section-title .rm:hover{background:var(--err);color:#fff}
+.thumb-section .field{margin-bottom:8px}
+.thumb-section .field label{font-size:9.5px;margin-bottom:3px}
+.thumb-section .field input[type=text],.thumb-section .field select{font-size:11px;padding:5px 8px}
+.thumb-section .field input[type=range]{width:100%;accent-color:var(--acc)}
+
+.thumb-tpl-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.thumb-tpl{aspect-ratio:16/9;border-radius:6px;cursor:pointer;transition:.15s;border:2px solid transparent;position:relative;overflow:hidden;background-size:cover;background-position:center}
+.thumb-tpl:hover{border-color:var(--acc);transform:scale(1.05)}
+.thumb-tpl.active{border-color:#f59e0b}
+.thumb-tpl span{position:absolute;bottom:2px;left:4px;font-size:9px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;right:4px}
+
+.thumb-add-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.thumb-add-btn{background:var(--bg-3);border:1px solid var(--line-2);border-radius:6px;padding:8px;cursor:pointer;transition:.15s;text-align:center;font-size:10.5px;color:var(--txt-2)}
+.thumb-add-btn:hover{background:var(--bg-2);border-color:var(--acc);color:var(--txt)}
+.thumb-add-btn .ic{font-size:18px;display:block;margin-bottom:2px}
+
+.thumb-emoji-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;max-height:130px;overflow-y:auto;padding:5px;background:var(--bg-3);border-radius:6px}
+.thumb-emoji-btn{aspect-ratio:1;background:var(--bg-2);border-radius:4px;border:1px solid transparent;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.thumb-emoji-btn:hover{background:var(--bg-3);border-color:var(--acc);transform:scale(1.1)}
+
+.thumb-bar{display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--line);background:var(--bg-2);flex-shrink:0;align-items:center;flex-wrap:wrap}
+.thumb-bar button{padding:6px 12px;border-radius:6px;font-size:11.5px;font-weight:600;background:var(--bg-3);color:var(--txt-2);transition:.15s}
+.thumb-bar button:hover{background:var(--acc);color:#fff}
+.thumb-bar button.primary{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff}
+.thumb-bar .spacer{flex:1}
+.thumb-bar .color-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent}
+.thumb-bar .color-dot:hover{border-color:#fff}
+.thumb-bar .color-dot.active{border-color:#fff;box-shadow:0 0 0 2px var(--acc)}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.pulse{animation:pulse 1.5s ease-in-out infinite}
+</style>
+</head>
+<body>
+
+<div class="launcher" id="launcher">
+  <div class="launcher-head">
+    <div class="logo"><div class="dot">▶</div> ProCut Studio</div>
+    <div class="spacer"></div>
+    <button class="folder-btn" id="launcherFolderBtn">
+      <span>📂</span>
+      <span id="launcherFolderLabel">Открыть папку</span>
+      <span class="folder-name" id="launcherFolderName"></span>
+    </button>
+  </div>
+  <div class="launcher-body">
+    <div class="launcher-section">
+      <div class="launcher-section-title">Создать</div>
+      <div class="new-row">
+        <div class="new-btn b1" id="newProjectBtn">
+          <div class="ico">+</div>
+          <div class="info"><h3>Новый проект</h3><p>Импортируйте видео и монтируйте</p></div>
+        </div>
+        <div class="new-btn b2" id="aiProjectBtn">
+          <div class="ico">🤖</div>
+          <div class="info"><h3>Авто-монтаж от ИИ</h3><p>Импортируйте видео — ИИ сам соберёт монтаж</p></div>
+        </div>
+        <div class="new-btn b3" id="coverProjectBtn">
+          <div class="ico">🖼</div>
+          <div class="info"><h3>Создать обложку</h3><p>Профессиональное превью за минуту</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="launcher-section">
+      <div class="launcher-section-title">Мои проекты <span class="cnt" id="projectsCount">0</span></div>
+      <div id="projectsContainer"></div>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <header class="topbar">
+    <button class="back-btn" id="btnBack" title="К списку">←</button>
+    <div class="proj-title" id="projectTitle">Без названия</div>
+    <div class="sep"></div>
+    <button class="tbtn" id="btnImport">📁 Импорт</button>
+    <button class="tbtn" id="btnSplit" title="S">✂️</button>
+    <button class="tbtn" id="btnDelete" title="Del">🗑</button>
+    <button class="tbtn" id="btnDuplicate" title="Ctrl+D">⧉</button>
+    <button class="tbtn" id="btnUndo" title="Ctrl+Z">↶</button>
+    <div class="sep"></div>
+    <button class="tbtn thumb" id="btnThumbnail">🖼 Превью</button>
+    <button class="tbtn ai" id="btnAIMontage">🤖 ИИ</button>
+    <div class="spacer"></div>
+    <span class="save-ind" id="saveIndicator">● Не сохранено</span>
+    <span class="badge" id="statBadge">Готов</span>
+    <button class="tbtn primary" id="btnSaveProj">💾 Сохранить</button>
+    <button class="tbtn" id="btnExport">📤 Скачать</button>
+  </header>
+
+  <div class="main">
+    <aside class="left-panel">
+      <div class="tabs">
+        <div class="tab active" data-tab="media">Медиа</div>
+        <div class="tab" data-tab="stickers">Стикеры</div>
+        <div class="tab" data-tab="effects">FX</div>
+        <div class="tab" data-tab="transitions">Переходы</div>
+        <div class="tab" data-tab="sfx">Звуки</div>
+      </div>
+      <div class="tab-content active" id="tab-media">
+        <div class="panel-head">Медиатека <span class="count" id="mediaCount">0</span></div>
+        <div class="dropzone" id="dropzone">
+          <div class="ico">📁</div>
+          <p>Видео, аудио, фото</p><small>Перетащите или кликните</small>
+        </div>
+        <input type="file" id="fileInput" accept="video/*,audio/*,image/*" multiple hidden>
+        <div class="media-list" id="mediaList"></div>
+      </div>
+      <div class="tab-content" id="tab-stickers">
+        <div class="panel-head">😀 Стикеры</div>
+        <div id="stickerCategories"></div>
+      </div>
+      <div class="tab-content" id="tab-effects">
+        <div class="panel-head">⚡ FX-эффекты</div>
+        <div id="fxCategories"></div>
+        <div class="panel-head" style="margin-top:8px">Пресеты</div>
+        <div class="preset-list" id="presetList"></div>
+      </div>
+      <div class="tab-content" id="tab-transitions">
+        <div class="panel-head">Переходы</div>
+        <div class="trans-list" id="transList"></div>
+      </div>
+      <div class="tab-content" id="tab-sfx">
+        <div class="panel-head">Звуки <button class="mini-btn" id="sfxStopAll">■ Стоп</button></div>
+        <div class="sfx-list" id="sfxList"></div>
+      </div>
+    </aside>
+
+    <section class="center">
+      <div class="preview-wrap">
+        <div class="preview-stage" id="previewStage">
+          <div class="preview-empty" id="previewEmpty">
+            <div class="ico">🎬</div>
+            <p>Нет активного клипа</p><small>Импортируйте видео</small>
+          </div>
+          <video id="previewVideo" style="display:none" playsinline></video>
+          <canvas id="overlayCanvas" class="overlay-canvas" style="display:none"></canvas>
+        </div>
+      </div>
+      <div class="transport">
+        <button class="btn-skip" id="btnPrevFrame">⏮</button>
+        <button class="btn-play" id="btnPlay" disabled>▶</button>
+        <button class="btn-skip" id="btnNextFrame">⏭</button>
+        <div class="time-display"><b id="timeCur">00:00.00</b> / <span id="timeTotal">00:00.00</span></div>
+        <div class="zoom"><span>Масштаб</span><input type="range" id="zoomRange" min="20" max="200" value="60"></div>
+      </div>
+    </section>
+
+    <aside class="inspector">
+      <div class="panel-head">Инспектор</div>
+      <div class="insp-body" id="inspBody">
+        <div class="insp-empty" id="inspEmpty">Выберите клип</div>
+        <div id="inspContent" style="display:none">
+          <div class="field"><label>Название</label><input type="text" id="propName"></div>
+          <div id="trimBlock">
+            <div class="field">
+              <label>Обрезка</label>
+              <div class="trim-track"><div class="range" id="trimRange"></div></div>
+              <div class="trim-nums">
+                <div class="box"><span>IN</span><input type="text" id="propIn"></div>
+                <div class="box"><span>OUT</span><input type="text" id="propOut"></div>
+              </div>
+            </div>
+            <div class="field">
+              <label>Скорость</label>
+              <div class="speed-row" id="speedRow">
+                <button data-speed="0.5">0.5×</button>
+                <button data-speed="0.75">0.75×</button>
+                <button data-speed="1" class="active">1×</button>
+                <button data-speed="1.5">1.5×</button>
+                <button data-speed="2">2×</button>
+              </div>
+            </div>
+          </div>
+          <div id="fxBlock" style="display:none">
+            <div class="section-title">FX</div>
+            <div class="field"><label>Тип</label><input type="text" id="fxType" readonly></div>
+            <div class="field"><label>Длительность (сек)</label><input type="number" id="fxDur" min="0.05" max="20" step="0.05"></div>
+            <div class="field"><label>Начало (сек)</label><input type="number" id="fxStart" min="0" step="0.1"></div>
+            <div id="fxParams"></div>
+          </div>
+          <div id="videoPropsBlock">
+            <div class="section-title">Свойства</div>
+            <div class="prop-grid">
+              <div class="prop"><span>Длительность</span><b id="propDur">—</b></div>
+              <div class="prop"><span>Разрешение</span><b id="propRes">—</b></div>
+              <div class="prop"><span>FPS</span><b id="propFps">—</b></div>
+              <div class="prop"><span>Тип</span><b id="propType">—</b></div>
+            </div>
+            <div class="section-title">Параметры</div>
+            <div class="slider-row"><label>Яркость</label><input type="range" id="pBrightness" min="0" max="200" value="100"><span class="val" id="vBrightness">100</span></div>
+            <div class="slider-row"><label>Контраст</label><input type="range" id="pContrast" min="0" max="200" value="100"><span class="val" id="vContrast">100</span></div>
+            <div class="slider-row"><label>Насыщ.</label><input type="range" id="pSaturate" min="0" max="200" value="100"><span class="val" id="vSaturate">100</span></div>
+            <div class="slider-row"><label>Оттенок</label><input type="range" id="pHue" min="-180" max="180" value="0"><span class="val" id="vHue">0</span></div>
+            <div class="slider-row"><label>Размытие</label><input type="range" id="pBlur" min="0" max="20" value="0"><span class="val" id="vBlur">0</span></div>
+            <div class="slider-row"><label>Сепия</label><input type="range" id="pSepia" min="0" max="100" value="0"><span class="val" id="vSepia">0</span></div>
+            <div class="slider-row"><label>Прозрач.</label><input type="range" id="pOpacity" min="0" max="100" value="100"><span class="val" id="vOpacity">100</span></div>
+            <div class="section-title">Аудио</div>
+            <div class="slider-row"><label>Громкость</label><input type="range" id="pVolume" min="0" max="200" value="100"><span class="val" id="vVolume">100</span></div>
+            <div class="slider-row"><label>Fade in</label><input type="range" id="pFadeIn" min="0" max="300" value="0"><span class="val" id="vFadeIn">0</span></div>
+            <div class="slider-row"><label>Fade out</label><input type="range" id="pFadeOut" min="0" max="300" value="0"><span class="val" id="vFadeOut">0</span></div>
+            <div class="field" id="loopBlock" style="display:none">
+              <label>Зацикливание</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--txt-2)">
+                <input type="checkbox" id="pLoop" style="accent-color:var(--acc)"> Повторять до конца
+              </label>
+            </div>
+            <div class="section-title">Действия</div>
+            <button class="tbtn" style="width:100%;justify-content:center;background:var(--bg-2);border:1px solid var(--line-2);margin-bottom:6px" id="btnReplaceMedia">🔄 Заменить видео</button>
+            <button class="tbtn" style="width:100%;justify-content:center;background:var(--bg-2);border:1px solid var(--line-2)" id="btnAddTitle">+ Добавить титр</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="timeline">
+    <div class="tl-toolbar">
+      <button class="tl-btn active" id="toolSelect">☝ Выбор</button>
+      <button class="tl-btn" id="toolCut">✂️ Лезвие</button>
+      <div class="spacer"></div>
+      <button class="tl-btn danger" id="btnClearAll">🗑 Очистить</button>
+      <div class="scale"><span>🔍</span><input type="range" id="scaleRange" min="20" max="300" value="60"></div>
+    </div>
+    <div class="tl-body" id="tlBody">
+      <div class="tl-labels">
+        <div class="tl-label-head"></div>
+        <div class="tl-label stickers"><span class="ic">😀</span> Стикеры</div>
+        <div class="tl-label fx"><span class="ic">⚡</span> FX</div>
+        <div class="tl-label video"><span class="ic">▶</span> Видео</div>
+        <div class="tl-label audio"><span class="ic">♪</span> Аудио</div>
+        <div class="tl-label music"><span class="ic">♫</span> Музыка</div>
+      </div>
+      <div class="tl-scroll" id="tlScroll">
+        <div class="tl-ruler" id="tlRuler"></div>
+        <div class="tl-tracks" id="tlTracks">
+          <div class="tl-track stickers" id="trackStickers"></div>
+          <div class="tl-track fx" id="trackFx"></div>
+          <div class="tl-track video" id="trackVideo"></div>
+          <div class="tl-track audio" id="trackAudio"></div>
+          <div class="tl-track music" id="trackMusic"></div>
+        </div>
+        <div class="playhead" id="playhead" style="left:0"></div>
+        <div class="marquee-box" id="marqueeBox"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="restore-banner" id="restoreBanner">
+  <span>⚠ Файлы не найдены. Открыть папку?</span>
+  <button id="restoreBannerBtn">📂 Открыть</button>
+</div>
+
+<div class="progress-overlay" id="progressOverlay">
+  <div class="progress-card">
+    <h3 id="progressTitle">Обработка…</h3>
+    <div class="bar"><div class="bar-fill" id="progressFill"></div></div>
+    <div class="pct" id="progressPct">0%</div>
+    <div class="stage" id="progressStage"></div>
+  </div>
+</div>
+
+<div class="modal" id="newProjectModal">
+  <div class="modal-card">
+    <h3>Новый проект</h3>
+    <div class="field"><label>Название</label><input type="text" id="newProjName" value="Мой проект"></div>
+    <div class="field"><label>Разрешение</label>
+      <select id="newProjRes">
+        <option value="1280x720" selected>HD 720p (1280×720)</option>
+        <option value="1920x1080">Full HD (1920×1080)</option>
+        <option value="1080x1920">Вертикальный (1080×1920)</option>
+        <option value="3840x2160">4K (3840×2160)</option>
+      </select>
+    </div>
+    <div class="field"><label>FPS</label>
+      <select id="newProjFps">
+        <option value="24">24</option>
+        <option value="30" selected>30</option>
+        <option value="60">60</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="cancel" id="newProjCancel">Отмена</button>
+      <button class="apply" id="newProjCreate">Создать</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="aiModal">
+  <div class="modal-card" style="min-width:460px">
+    <h3 style="background:linear-gradient(135deg,#8b5cf6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:16px;font-weight:700">🤖 Авто-монтаж</h3>
+    <div class="field"><label>Название</label><input type="text" id="aiProjectName" value="AI-проект"></div>
+    <label style="display:block;font-size:10.5px;color:var(--txt-2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px;font-weight:600">Стиль</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      <div class="ai-mode active" data-mode="dynamic" style="background:var(--bg-2);border:2px solid var(--acc);border-radius:8px;padding:10px;cursor:pointer;text-align:center">
+        <div style="font-size:20px;margin-bottom:4px">⚡</div>
+        <div style="font-size:11.5px;font-weight:600">Динамичный</div>
+        <div style="font-size:9.5px;color:var(--txt-3)">Быстрые резы</div>
+      </div>
+      <div class="ai-mode" data-mode="cinematic" style="background:var(--bg-2);border:2px solid var(--line-2);border-radius:8px;padding:10px;cursor:pointer;text-align:center">
+        <div style="font-size:20px;margin-bottom:4px">🎬</div>
+        <div style="font-size:11.5px;font-weight:600">Кинематограф</div>
+        <div style="font-size:9.5px;color:var(--txt-3)">Плавно, титры</div>
+      </div>
+      <div class="ai-mode" data-mode="vlog" style="background:var(--bg-2);border:2px solid var(--line-2);border-radius:8px;padding:10px;cursor:pointer;text-align:center">
+        <div style="font-size:20px;margin-bottom:4px">📹</div>
+        <div style="font-size:11.5px;font-weight:600">Влог</div>
+        <div style="font-size:9.5px;color:var(--txt-3)">Живо</div>
+      </div>
+      <div class="ai-mode" data-mode="short" style="background:var(--bg-2);border:2px solid var(--line-2);border-radius:8px;padding:10px;cursor:pointer;text-align:center">
+        <div style="font-size:20px;margin-bottom:4px">📱</div>
+        <div style="font-size:11.5px;font-weight:600">Shorts</div>
+        <div style="font-size:9.5px;color:var(--txt-3)">Очень быстро</div>
+      </div>
+    </div>
+    <div class="field"><label>Длительность (сек)</label><input type="number" id="aiTargetDur" value="30" min="5" max="300"></div>
+    <div class="field"><label>Импортировать видео</label><input type="file" id="aiVideoInput" accept="video/*" multiple style="background:none;border:none;padding:0"></div>
+    <div class="modal-actions">
+      <button class="cancel" id="aiCancel">Отмена</button>
+      <button class="apply" id="aiStart" style="background:linear-gradient(135deg,#8b5cf6,#ec4899)">🚀 Начать</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="titleModal">
+  <div class="modal-card" style="min-width:560px">
+    <h3>Добавить титр</h3>
+    <div class="field"><label>Текст</label><textarea id="titleText" rows="2">Заголовок</textarea></div>
+    <div class="field">
+      <label>Шрифт</label>
+      <div class="font-grid" id="fontGrid"></div>
+    </div>
+    <div class="field"><label>Размер: <span id="titleSizeVal">64</span> px</label>
+      <input type="range" id="titleSize" min="10" max="300" value="64" style="width:100%;accent-color:var(--acc)">
+    </div>
+    <div class="field">
+      <label>Начертание</label>
+      <div class="align-row">
+        <button class="align-btn" data-weight="300">Light</button>
+        <button class="align-btn active" data-weight="400">Regular</button>
+        <button class="align-btn" data-weight="700">Bold</button>
+        <button class="align-btn" data-weight="900">Black</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Цвет текста</label>
+      <div class="color-row"><input type="color" id="titleColorPick" value="#ffffff"><input type="text" id="titleColor" value="#ffffff"></div>
+    </div>
+    <div class="field">
+      <label>Обводка (<span id="strokeVal">0</span> px)</label>
+      <div class="color-row" style="margin-bottom:6px"><input type="color" id="titleStrokeColor" value="#000000"><input type="text" id="titleStrokeColorTxt" value="#000000"></div>
+      <input type="range" id="titleStrokeWidth" min="0" max="10" value="0" step="1" style="width:100%;accent-color:var(--acc)">
+    </div>
+    <div class="field">
+      <label>Тень</label>
+      <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--txt-2)"><input type="checkbox" id="titleShadow" checked style="accent-color:var(--acc)"> Включить</label>
+    </div>
+    <div class="modal-actions">
+      <button class="cancel" id="titleCancel">Отмена</button>
+      <button class="apply" id="titleApply">Применить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="thumbnailModal">
+  <div class="thumb-editor">
+    <div class="thumb-head">
+      <h3>🖼 Редактор превью</h3>
+      <div class="spacer"></div>
+      <button class="tbtn" id="thumbCancel" style="background:var(--bg-3)">✕ Закрыть</button>
+    </div>
+    <div class="thumb-body">
+      <div class="tc-wrap" id="tcWrap">
+        <div class="tc-container" id="tcContainer">
+          <canvas id="thumbCanvas" width="1280" height="720"></canvas>
+          <div class="thumb-grid-overlay" id="thumbGrid"></div>
+          <div class="thumb-snap v" id="snapV"></div>
+          <div class="thumb-snap h" id="snapH"></div>
+          <div class="thumb-sel-frame" id="thumbSelFrame">
+            <div class="handle tl" data-handle="tl"></div>
+            <div class="handle tr" data-handle="tr"></div>
+            <div class="handle bl" data-handle="bl"></div>
+            <div class="handle br" data-handle="br"></div>
+            <div class="handle rotate" data-handle="rotate"></div>
+          </div>
+        </div>
+      </div>
+      <div class="thumb-props">
+        <div class="thumb-section">
+          <div class="thumb-section-title">🎨 Шаблоны</div>
+          <div class="thumb-tpl-grid" id="thumbTplGrid"></div>
+        </div>
+        <div class="thumb-section">
+          <div class="thumb-section-title">➕ Добавить</div>
+          <div class="thumb-add-row">
+            <div class="thumb-add-btn" id="thumbAddTitle"><span class="ic">T</span>Заголовок</div>
+            <div class="thumb-add-btn" id="thumbAddSubtitle"><span class="ic">t</span>Подзаголовок</div>
+            <div class="thumb-add-btn" id="thumbAddEmoji"><span class="ic">😀</span>Эмодзи</div>
+            <div class="thumb-add-btn" id="thumbAddShape"><span class="ic">▢</span>Фигура</div>
+          </div>
+          <div id="thumbEmojiWrap" style="display:none;margin-top:6px">
+            <div class="thumb-emoji-grid" id="thumbEmojiGrid"></div>
+          </div>
+        </div>
+        <div id="thumbElementProps"></div>
+      </div>
+    </div>
+    <div class="thumb-bar">
+      <span style="font-size:10.5px;color:var(--txt-3);font-weight:600">Цвет фона:</span>
+      <div class="color-dot" style="background:#0a0b0f" data-bg="#0a0b0f"></div>
+      <div class="color-dot" style="background:linear-gradient(135deg,#1a237e,#3949ab)" data-bg="linear-gradient(135deg,#1a237e,#3949ab)"></div>
+      <div class="color-dot" style="background:linear-gradient(135deg,#b71c1c,#e53935)" data-bg="linear-gradient(135deg,#b71c1c,#e53935)"></div>
+      <div class="color-dot" style="background:linear-gradient(135deg,#4a148c,#7b1fa2)" data-bg="linear-gradient(135deg,#4a148c,#7b1fa2)"></div>
+      <div class="color-dot" style="background:linear-gradient(135deg,#1b5e20,#43a047)" data-bg="linear-gradient(135deg,#1b5e20,#43a047)"></div>
+      <div class="color-dot" style="background:linear-gradient(135deg,#e65100,#fb8c00)" data-bg="linear-gradient(135deg,#e65100,#fb8c00)"></div>
+      <div class="color-dot" style="background:linear-gradient(135deg,#880e4f,#e91e63)" data-bg="linear-gradient(135deg,#880e4f,#e91e63)"></div>
+      <div class="spacer"></div>
+      <button id="thumbToggleGrid">▦ Сетка</button>
+      <button id="thumbReset">🔄 Сброс</button>
+      <button class="primary" id="thumbExport">💾 Скачать PNG</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
-   ProCut Studio — full rewritten script (v2)
-   Fixed: SyntaxError, UTF-8 emoji, export audio sync, XSS,
-   seek races, timeline drag throttle, preset reset, SFX volume,
-   clip time index, ObjectURL leaks, AbortController import.
+   ProCut Studio — full script (без FFmpeg, скачивание в WebM)
    ============================================================ */
-'use strict';
 
 const $ = id => document.getElementById(id);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -13,36 +823,6 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const isHex = s => /^#[0-9a-f]{6}$/i.test(String(s || ''));
 const safeHex = (s, fallback = '#000000') => isHex(s) ? s : fallback;
-
-/* ============ FFmpeg lazy ============ */
-let ffmpeg = null, ffmpegLoaded = false, ffmpegLoading = null;
-async function initFFmpeg() {
-  if (ffmpegLoaded) return true;
-  if (ffmpegLoading) return ffmpegLoading;
-  ffmpegLoading = (async () => {
-    try {
-      $('progressStage').textContent = 'Загрузка FFmpeg (25 МБ)…';
-      const { FFmpeg } = window.FFmpegWASM;
-      ffmpeg = new FFmpeg();
-      ffmpeg.on('log', ({ message }) => {
-        const s = $('progressStage');
-        if (s) s.textContent = message.substring(0, 90);
-      });
-      await ffmpeg.load({
-        coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
-        wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm',
-      });
-      ffmpegLoaded = true;
-      ffmpegLoading = null;
-      return true;
-    } catch (e) {
-      console.error('FFmpeg:', e);
-      ffmpegLoading = null;
-      return false;
-    }
-  })();
-  return ffmpegLoading;
-}
 
 /* ============ FILESYSTEM ============ */
 const FS = {
@@ -164,7 +944,6 @@ const FS = {
     const files = await this.listFiles('projects');
     const projects = [];
     const json = files.filter(f => f.name.endsWith('.json'));
-    // Параллельно с ограничением
     for (const f of json) {
       try {
         const file = await f.handle.getFile();
@@ -215,7 +994,6 @@ const SFXPlayer = {
       try {
         const g = this.ctx.createGain();
         g.gain.value = gain;
-        // node уже подключён к master; переподключаем через gain
         try { node.disconnect(); } catch (e) {}
         node.connect(g).connect(this.master);
       } catch (e) {}
@@ -327,7 +1105,7 @@ const State = {
   unsavedChanges: false,
   selectedTitleClip: null,
   titleDrag: null,
-  _clipIndex: new Map(), // track -> array of clips (кэш)
+  _clipIndex: new Map(),
 };
 
 /* ============ UTILS ============ */
@@ -957,7 +1735,7 @@ function drawParticleEffect(targetCtx, fx, W, H, time) {
 
 /* ============ PLAYBACK ============ */
 let playRaf = null, activeClipRef = null, activeVideoEl = null, lastSfxTime = 0;
-let renderGeneration = 0; // токен отмены seek
+let renderGeneration = 0;
 
 function prepareActiveVideo(time) {
   const clip = getActiveVideoClip(time);
@@ -1003,7 +1781,6 @@ function prepareActiveVideo(time) {
     activeVideoEl.play().catch(() => {});
   }
 
-  // Аудио
   State.media.forEach(m => {
     if (m.type !== 'audio' || !m.el || m.missing) return;
     const activeClips = State.clips.filter(c => c.mediaId === m.id && (c.track === 'audio' || c.track === 'music') && time >= c.start && time < c.start + getClipDuration(c));
@@ -1055,7 +1832,6 @@ async function play() {
     if (!activeClipRef || newActive?.id !== activeClipRef.id) {
       prepareActiveVideo(t);
     } else {
-      // Обновляем аудио
       State.media.forEach(m => {
         if (m.type !== 'audio' || !m.el || m.missing) return;
         const activeClips = State.clips.filter(c => c.mediaId === m.id && (c.track === 'audio' || c.track === 'music') && t >= c.start && t < c.start + getClipDuration(c));
@@ -1191,9 +1967,9 @@ async function renderPreviewAt(time) {
           };
           v.addEventListener('seeked', finish);
           v.currentTime = target;
-          setTimeout(finish, 500); // safety, но не 150
+          setTimeout(finish, 500); 
         });
-        if (gen !== renderGeneration) return; // отменено новым seek
+        if (gen !== renderGeneration) return; 
       }
       drawOverlayFX(time);
     }
@@ -1276,7 +2052,7 @@ document.addEventListener('mouseup', () => {
   if (State.titleDrag) { State.titleDrag = null; document.body.style.cursor = ''; markUnsaved(); }
 });
 
-/* ============ TIMELINE (throttled render) ============ */
+/* ============ TIMELINE ============ */
 let tlRenderPending = false;
 let tlRenderForce = false;
 function scheduleRenderTimeline(force) {
@@ -1591,7 +2367,6 @@ function updateInspector() {
   $('loopBlock').style.display = (c.track === 'music' || c.track === 'audio') ? 'block' : 'none';
   $('propName').value = c.name;
 
-  // Удалить старый блок стикера
   const oldSb = $('inspContent').querySelector('.sticker-edit-block');
   if (oldSb) oldSb.remove();
 
@@ -1736,7 +2511,6 @@ function applyPreset(preset) {
   const c = getSelectedClip();
   if (!c) return toast('Выберите клип', 'warn');
   if (c.track === 'fx') return toast('Нельзя к FX', 'warn');
-  // Полный сброс перед применением
   c.fx = { ...DEFAULT_FX, ...preset.fx };
   snapshot();
   renderAll();
@@ -2371,7 +3145,7 @@ const Thumb = {
 
   export() {
     this.canvas.toBlob(blob => {
-      if (!blob) { toast('Не удалось экспортировать (canvas tainted)', 'err'); return; }
+      if (!blob) { toast('Не удалось экспортировать', 'err'); return; }
       const fileName = `thumbnail_${Date.now()}.png`;
       if (FS.dirHandle) {
         FS.writeFile('exports', fileName, blob).then(() => {
@@ -2402,7 +3176,7 @@ function openThumbnailModal() {
   setTimeout(() => { Thumb.open(); Thumb.render(); }, 50);
 }
 
-/* ============ EXPORT MP4 ============ */
+/* ============ EXPORT WEBM ============ */
 let exporting = false;
 
 function cssFilterV(fx) {
@@ -2513,14 +3287,9 @@ async function exportVideo() {
     ex.fillStyle = '#000';
     ex.fillRect(0, 0, W, H);
 
-    // === АУДИО ===
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     dest = audioCtx.createMediaStreamDestination();
-    // SFX тоже должны попасть в экспорт — через отдельный gain-нод
-    const sfxGain = audioCtx.createGain();
-    sfxGain.gain.value = 1;
-    sfxGain.connect(dest);
-
+    
     const connectedMedia = new Set();
     State.media.forEach(m => {
       if (!m.el || !m.el.play || m.missing) return;
@@ -2529,7 +3298,7 @@ async function exportVideo() {
         if (!m._srcNode) {
           m._srcNode = audioCtx.createMediaElementSource(m.el);
           m._srcNode.connect(dest);
-          m._srcNode.connect(audioCtx.destination); // слышно при экспорте
+          m._srcNode.connect(audioCtx.destination);
         }
         connectedMedia.add(m.el);
       } catch (e) {}
@@ -2542,11 +3311,14 @@ async function exportVideo() {
     if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm;codecs=vp8,opus';
     if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
 
+    if (!MediaRecorder.isTypeSupported(mime)) {
+      throw new Error('Ваш браузер не поддерживает запись видео. Используйте Chrome или Edge.');
+    }
+
     const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8_000_000, audioBitsPerSecond: 128_000 });
     const chunks = [];
     rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
 
-    // === РЕАЛЬНОЕ ВРЕМЯ (аудио не паузим) ===
     State.media.forEach(m => { if (m.el && m.el.pause) m.el.pause(); });
     rec.start();
 
@@ -2556,7 +3328,7 @@ async function exportVideo() {
     await new Promise(resolve => {
       const renderFrame = async () => {
         const elapsed = (performance.now() - startReal) / 1000;
-        // SFX в экспорте
+        
         State.clips.forEach(c => {
           if (c.sfx && c.start >= lastSfxTime && c.start < elapsed) {
             SFXPlayer.play(c.sfx, null, c.volume || 1);
@@ -2564,7 +3336,6 @@ async function exportVideo() {
         });
         lastSfxTime = elapsed;
 
-        // Проигрываем видео-элемент синхронно
         const active = getActiveVideoClip(elapsed);
         if (active) {
           const media = getMedia(active.mediaId);
@@ -2598,56 +3369,20 @@ async function exportVideo() {
     await new Promise(r => { rec.onstop = r; });
 
     const webmBlob = new Blob(chunks, { type: 'video/webm' });
-
-    // MP4 конвертация
-    $('progressTitle').textContent = '⚙️ Конвертация в MP4';
-    $('progressFill').style.width = '0%';
-    $('progressPct').textContent = '0%';
-    $('progressStage').textContent = 'Загрузка FFmpeg';
-
-    const ok = await initFFmpeg();
-    if (!ok) throw new Error('FFmpeg не загрузился');
-
-    const webmData = new Uint8Array(await webmBlob.arrayBuffer());
-    await ffmpeg.writeFile('input.webm', webmData);
-    $('progressFill').style.width = '30%';
-    $('progressPct').textContent = '30%';
-    $('progressStage').textContent = 'FFmpeg конвертирует…';
-
-    await ffmpeg.exec([
-      '-i', 'input.webm',
-      '-c:v', 'libx264',
-      '-preset', 'ultrafast',
-      '-crf', '23',
-      '-c:a', 'aac',
-      '-b:a', '128k',
-      '-movflags', '+faststart',
-      'output.mp4'
-    ]);
-
-    $('progressFill').style.width = '90%';
-    $('progressPct').textContent = '90%';
-    $('progressStage').textContent = 'Сохранение…';
-
-    const mp4Data = await ffmpeg.readFile('output.mp4');
-    const mp4Blob = new Blob([mp4Data.buffer], { type: 'video/mp4' });
-
-    await ffmpeg.deleteFile('input.webm');
-    await ffmpeg.deleteFile('output.mp4');
-
-    const fileName = `procut_export_${Date.now()}.mp4`;
+    const fileName = `procut_export_${Date.now()}.webm`;
+    
     if (FS.dirHandle) {
       try {
-        await FS.writeFile('exports', fileName, mp4Blob);
+        await FS.writeFile('exports', fileName, webmBlob);
         toast(`✅ Сохранено: exports/${fileName}`, 'ok');
       } catch (e) {
-        const url = URL.createObjectURL(mp4Blob);
+        const url = URL.createObjectURL(webmBlob);
         const a = document.createElement('a');
         a.href = url; a.download = fileName; a.click();
         setTimeout(() => URL.revokeObjectURL(url), 5000);
       }
     } else {
-      const url = URL.createObjectURL(mp4Blob);
+      const url = URL.createObjectURL(webmBlob);
       const a = document.createElement('a');
       a.href = url; a.download = fileName; a.click();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
@@ -2655,10 +3390,13 @@ async function exportVideo() {
 
     $('progressFill').style.width = '100%';
     $('progressPct').textContent = '100%';
-    toast('🎬 MP4 готов!', 'ok');
+    toast('🎬 Видео готово! (WebM)', 'ok');
   } catch (err) {
     console.error(err);
+    $('progressTitle').textContent = '❌ Ошибка экспорта';
+    $('progressStage').textContent = err.message;
     toast('Ошибка: ' + err.message, 'err');
+    await new Promise(r => setTimeout(r, 3000));
   } finally {
     overlay.classList.remove('show');
     setStatus('Готов');
@@ -2713,7 +3451,6 @@ async function loadProject(id, silent = false) {
     if (!gotPending) { $('restoreBanner').classList.add('show'); toast('Папка не открыта', 'warn'); }
   }
 
-  // Ревок старых URL
   State.media.forEach(m => { if (m.url) URL.revokeObjectURL(m.url); });
 
   const newMedia = [];
@@ -3334,3 +4071,5 @@ async function init() {
 }
 document.addEventListener('DOMContentLoaded', init);
 </script>
+</body>
+</html>
