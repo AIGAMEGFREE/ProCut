@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ProCut Pro</title>
-<!-- Шрифты для титров -->
+<link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Montserrat:wght@300;400;600;700;900&family=Bebas+Neue&family=Oswald:wght@300;400;600;700&family=Roboto:wght@300;400;500;700;900&family=Playfair+Display:wght@400;700;900&family=Pacifico&family=Caveat:wght@400;700&family=Lobster&family=Permanent+Marker&family=Press+Start+2P&family=Russo+One&family=Bad+Script&family=Marck+Script&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=Montserrat:wght@300;400;600;700;900&family=Bebas+Neue&family=Oswald:wght@300;400;600;700&family=Roboto:wght@300;400;500;700;900&family=Playfair+Display:wght@400;700;900&family=Pacifico&family=Caveat:wght@400;700&family=Lobster&family=Permanent+Marker&family=Press+Start+2P&family=Russo+One&family=Bad+Script&family=Marck+Script&family=Comfortaa:wght@400;700&family=Amatic+SC:wght@400;700&family=Neucha&family=Pangolin&family=Yeseva+One&family=Underdog&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg-0:#0d0e12; --bg-1:#14161c; --bg-2:#1b1e26; --bg-3:#232733;
@@ -117,6 +117,7 @@
   .media-item{display:flex;gap:8px;padding:6px;background:var(--bg-2);border-radius:5px;cursor:grab;border:1px solid transparent;transition:.15s}
   .media-item:hover{background:var(--bg-3);border-color:var(--line-2)}
   .media-item img{width:56px;height:34px;object-fit:cover;border-radius:4px;background:#000;flex-shrink:0}
+  .media-item .audio-icon{width:56px;height:34px;border-radius:4px;background:linear-gradient(135deg,#7a5a1e,#5a4316);display:grid;place-items:center;font-size:16px;flex-shrink:0}
   .media-item .meta{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
   .media-item .meta .name{font-size:11.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .media-item .meta .info{font-size:10px;color:var(--txt-3);margin-top:1px}
@@ -165,9 +166,8 @@
   .preview-wrap{flex:1;display:grid;place-items:center;padding:14px;overflow:hidden;position:relative}
   .preview-stage{position:relative;background:#000;border-radius:var(--r);box-shadow:var(--sh);max-width:100%;max-height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
   .preview-stage canvas{display:block;max-width:100%;max-height:100%}
-  /* overlay для drag текста */
   .text-overlay{position:absolute;inset:0;pointer-events:none;z-index:5}
-  .text-overlay.editing{pointer-events:auto;cursor:move}
+  .text-overlay.editing{pointer-events:auto}
   .text-overlay .drag-handle{
     position:absolute;
     border:2px dashed rgba(91,140,255,.8);
@@ -175,21 +175,10 @@
     border-radius:4px;
     pointer-events:auto;
     cursor:move;
-    min-width:40px;
-    min-height:20px;
+    min-width:40px; min-height:20px;
     display:none;
   }
   .text-overlay.editing .drag-handle{display:block}
-  .text-overlay .drag-handle::before,
-  .text-overlay .drag-handle::after{
-    content:'';
-    position:absolute;
-    width:8px;height:8px;
-    background:var(--acc);
-    border-radius:2px;
-  }
-  .text-overlay .drag-handle::before{top:-4px;left:-4px}
-  .text-overlay .drag-handle::after{bottom:-4px;right:-4px}
 
   .preview-empty{text-align:center;color:var(--txt-3);padding:40px}
   .preview-empty svg{width:52px;height:52px;opacity:.4;margin-bottom:10px}
@@ -245,12 +234,12 @@
 
   .section-title{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--txt-3);margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
 
-  /* Шрифты — сетка */
-  .font-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
-  .font-btn{background:var(--bg-2);border:1px solid var(--line-2);border-radius:5px;padding:8px 6px;cursor:pointer;transition:.15s;text-align:center;color:var(--txt);font-size:14px;line-height:1.2;min-height:44px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .font-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;max-height:220px;overflow-y:auto;padding-right:4px}
+  .font-btn{background:var(--bg-2);border:1px solid var(--line-2);border-radius:5px;padding:8px 6px;cursor:pointer;transition:.15s;text-align:center;color:var(--txt);font-size:14px;line-height:1.2;min-height:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
   .font-btn:hover{background:var(--bg-3);border-color:var(--acc)}
   .font-btn.active{border-color:var(--acc);background:rgba(91,140,255,.15)}
-  .font-btn small{font-size:8px;color:var(--txt-3);display:block;margin-top:2px;font-family:'Inter',sans-serif}
+  .font-btn .font-name{font-size:13px;line-height:1.1}
+  .font-btn small{font-size:8.5px;color:var(--txt-3);display:block;margin-top:3px;font-family:'Inter',sans-serif}
 
   .align-row{display:flex;gap:4px;margin-bottom:8px}
   .align-btn{flex:1;padding:7px 4px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:4px;color:var(--txt-2);font-size:14px;transition:.15s}
@@ -261,7 +250,6 @@
   .color-row input[type=color]{width:40px;height:32px;border:1px solid var(--line-2);border-radius:5px;background:var(--bg-2);cursor:pointer;padding:2px}
   .color-row input[type=text]{flex:1}
 
-  /* TIMELINE */
   .timeline{background:var(--bg-1);border-top:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
   .tl-toolbar{display:flex;align-items:center;gap:4px;padding:5px 10px;border-bottom:1px solid var(--line);background:var(--bg-2)}
   .tl-toolbar .tl-btn{padding:5px 9px;border-radius:4px;font-size:11px;color:var(--txt-2);display:flex;align-items:center;gap:4px;transition:.15s}
@@ -298,9 +286,11 @@
   .clip.audio-clip{background:linear-gradient(180deg,#1e6b3d,#164d2c)}
   .clip.music-clip{background:linear-gradient(180deg,#7a5a1e,#5a4316)}
   .clip.fx-clip{background:linear-gradient(180deg,#a06b1a,#6e4712)}
+  .clip.particle-clip{background:linear-gradient(180deg,#3d5c7a,#254058)}
   .clip .clip-thumb{position:absolute;inset:0;opacity:.35;background-size:auto 100%;background-repeat:repeat-x;pointer-events:none}
   .clip .clip-label{position:relative;z-index:2;padding:3px 5px;font-size:10px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}
   .clip .clip-title-badge{position:absolute;top:3px;right:4px;z-index:3;background:rgba(139,92,246,.9);color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:700;pointer-events:none}
+  .clip .clip-loop-badge{position:absolute;top:3px;left:4px;z-index:3;background:rgba(34,197,94,.9);color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:700;pointer-events:none}
   .clip .clip-trans{position:absolute;top:0;bottom:0;width:20px;z-index:3;background:repeating-linear-gradient(45deg,rgba(255,255,255,.3),rgba(255,255,255,.3) 3px,transparent 3px,transparent 6px);pointer-events:none}
   .clip .clip-trans.left{left:0;border-radius:5px 0 0 5px}
   .clip .clip-trans.right{right:0;border-radius:0 5px 5px 0}
@@ -428,9 +418,16 @@
         <div class="panel-head">Медиатека <span class="count" id="mediaCount">0</span></div>
         <div class="dropzone" id="dropzone">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <p>Перетащите файлы</p><small>Видео, аудио, фото</small>
+          <p>Видео, аудио, фото</p><small>Перетащите файлы сюда</small>
+        </div>
+        <div class="dropzone" id="musicDropzone" style="border-color:rgba(245,158,11,.5);margin-top:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--warn)">
+            <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+          </svg>
+          <p style="color:var(--warn)">🎵 Загрузить музыку с ПК</p><small>MP3, WAV, M4A, FLAC, OGG</small>
         </div>
         <input type="file" id="fileInput" accept="video/*,audio/*,image/*" multiple hidden>
+        <input type="file" id="musicInput" accept="audio/*" multiple hidden>
         <div class="media-list" id="mediaList"></div>
       </div>
       <div class="tab-content" id="tab-effects">
@@ -502,7 +499,7 @@
           <div id="fxBlock" style="display:none">
             <div class="section-title">FX-эффект</div>
             <div class="field"><label>Тип</label><input type="text" id="fxType" readonly></div>
-            <div class="field"><label>Длительность (сек)</label><input type="number" id="fxDur" min="0.05" max="10" step="0.05"></div>
+            <div class="field"><label>Длительность (сек)</label><input type="number" id="fxDur" min="0.05" max="20" step="0.05"></div>
             <div class="field"><label>Действует на</label><select id="fxTarget"><option value="video">Видео</option><option value="all">Всё</option></select></div>
             <div class="field"><label>Начало (сек)</label><input type="number" id="fxStart" min="0" step="0.1"></div>
             <div id="fxParams"></div>
@@ -529,6 +526,12 @@
             <div class="slider-row"><label>Громкость</label><input type="range" id="pVolume" min="0" max="100" value="100"><span class="val" id="vVolume">100</span></div>
             <div class="slider-row"><label>Fade in</label><input type="range" id="pFadeIn" min="0" max="300" value="0"><span class="val" id="vFadeIn">0</span></div>
             <div class="slider-row"><label>Fade out</label><input type="range" id="pFadeOut" min="0" max="300" value="0"><span class="val" id="vFadeOut">0</span></div>
+            <div class="field" id="loopBlock" style="display:none">
+              <label>Зацикливание</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--txt-2)">
+                <input type="checkbox" id="pLoop" style="accent-color:var(--acc)"> Повторять до конца таймлайна
+              </label>
+            </div>
             <div class="section-title">Титры</div>
             <button class="tbtn" style="width:100%;justify-content:center;background:var(--bg-2);border:1px solid var(--line-2);margin-bottom:6px" id="btnAddTitle">+ Добавить титр</button>
             <button class="tbtn" style="width:100%;justify-content:center;background:var(--bg-2);border:1px solid var(--line-2)" id="btnEditTitle">✏️ Редактировать титр</button>
@@ -579,7 +582,6 @@
   </div>
 </div>
 
-<!-- Модалка нового проекта -->
 <div class="modal" id="newProjectModal">
   <div class="modal-card">
     <h3>Новый проект</h3>
@@ -606,7 +608,6 @@
   </div>
 </div>
 
-<!-- AI модалка -->
 <div class="modal" id="aiModal">
   <div class="modal-card ai-modal" style="min-width:460px">
     <h3>🤖 Авто-монтаж от ИИ</h3>
@@ -630,7 +631,6 @@
   </div>
 </div>
 
-<!-- Модалка титра -->
 <div class="modal" id="titleModal">
   <div class="modal-card" style="min-width:560px">
     <h3 id="titleModalHeading">Добавить титр</h3>
@@ -641,7 +641,7 @@
     </div>
 
     <div class="field">
-      <label>Шрифт</label>
+      <label>Шрифт <span style="font-size:9px;color:var(--txt-3);text-transform:none;font-weight:400">🇷🇺 — кириллица, 🇺🇸 — латиница</span></label>
       <div class="font-grid" id="fontGrid"></div>
     </div>
 
@@ -688,20 +688,16 @@
 
     <div class="field">
       <label>Тень</label>
-      <div style="display:flex;gap:6px;align-items:center">
-        <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--txt-2)">
-          <input type="checkbox" id="titleShadow" checked style="accent-color:var(--acc)"> Включить
-        </label>
-      </div>
+      <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--txt-2)">
+        <input type="checkbox" id="titleShadow" checked style="accent-color:var(--acc)"> Включить
+      </label>
     </div>
 
     <div class="field">
       <label>Фон под текстом</label>
-      <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
-        <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--txt-2)">
-          <input type="checkbox" id="titleBg" style="accent-color:var(--acc)"> Включить
-        </label>
-      </div>
+      <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--txt-2);margin-bottom:6px">
+        <input type="checkbox" id="titleBg" style="accent-color:var(--acc)"> Включить
+      </label>
       <div class="color-row" id="bgColorRow" style="display:none">
         <input type="color" id="titleBgColor" value="#000000">
         <input type="text" id="titleBgColorTxt" value="#000000">
@@ -729,7 +725,7 @@
 
 <script>
 /* ============================================================
-   ProCut Pro — Titры + Drag
+   ProCut Pro — Full build with music + particles + russian fonts
    ============================================================ */
 const $ = id => document.getElementById(id);
 const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
@@ -737,7 +733,7 @@ const uid = ()=>Math.random().toString(36).slice(2,10);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 /* ============================================================
-   FILESYSTEM (не меняем)
+   FILESYSTEM
    ============================================================ */
 const FS = {
   dirHandle: null,
@@ -927,20 +923,26 @@ const SFXPlayer = {
    FONTS
    ============================================================ */
 const FONTS = [
-  {name:'Inter', family:"'Inter', sans-serif", weight:[300,400,600,700,900]},
-  {name:'Montserrat', family:"'Montserrat', sans-serif", weight:[300,400,600,700,900]},
-  {name:'Bebas Neue', family:"'Bebas Neue', sans-serif", weight:[400]},
-  {name:'Oswald', family:"'Oswald', sans-serif", weight:[300,400,600,700]},
-  {name:'Roboto', family:"'Roboto', sans-serif", weight:[300,400,500,700,900]},
-  {name:'Playfair', family:"'Playfair Display', serif", weight:[400,700,900]},
-  {name:'Pacifico', family:"'Pacifico', cursive", weight:[400]},
-  {name:'Caveat', family:"'Caveat', cursive", weight:[400,700]},
-  {name:'Lobster', family:"'Lobster', cursive", weight:[400]},
-  {name:'Marker', family:"'Permanent Marker', cursive", weight:[400]},
-  {name:'Press Start', family:"'Press Start 2P', cursive", weight:[400]},
-  {name:'Russo One', family:"'Russo One', sans-serif", weight:[400]},
-  {name:'Bad Script', family:"'Bad Script', cursive", weight:[400]},
-  {name:'Marck Script', family:"'Marck Script', cursive", weight:[400]},
+  {name:'Inter',       family:"'Inter', sans-serif",         flags:'🇷🇺🇺🇸'},
+  {name:'Montserrat',  family:"'Montserrat', sans-serif",    flags:'🇷🇺🇺🇸'},
+  {name:'Roboto',      family:"'Roboto', sans-serif",        flags:'🇷🇺🇺🇸'},
+  {name:'Bebas Neue',  family:"'Bebas Neue', sans-serif",    flags:'🇺🇸'},
+  {name:'Oswald',      family:"'Oswald', sans-serif",        flags:'🇷🇺🇺🇸'},
+  {name:'Playfair',    family:"'Playfair Display', serif",   flags:'🇷🇺🇺🇸'},
+  {name:'Pacifico',    family:"'Pacifico', cursive",         flags:'🇺🇸'},
+  {name:'Caveat',      family:"'Caveat', cursive",           flags:'🇷🇺🇺🇸'},
+  {name:'Lobster',     family:"'Lobster', cursive",          flags:'🇺🇸'},
+  {name:'Marker',      family:"'Permanent Marker', cursive", flags:'🇺🇸'},
+  {name:'Press Start', family:"'Press Start 2P', cursive",   flags:'🇺🇸'},
+  {name:'Russo One',   family:"'Russo One', sans-serif",     flags:'🇷🇺🇺🇸'},
+  {name:'Bad Script',  family:"'Bad Script', cursive",       flags:'🇷🇺'},
+  {name:'Marck Script',family:"'Marck Script', cursive",     flags:'🇷🇺'},
+  {name:'Comfortaa',   family:"'Comfortaa', cursive",        flags:'🇷🇺🇺🇸'},
+  {name:'Amatic SC',   family:"'Amatic SC', cursive",        flags:'🇷🇺🇺🇸'},
+  {name:'Neucha',      family:"'Neucha', cursive",           flags:'🇷🇺'},
+  {name:'Pangolin',    family:"'Pangolin', cursive",         flags:'🇷🇺🇺🇸'},
+  {name:'Yeseva One',  family:"'Yeseva One', serif",         flags:'🇷🇺🇺🇸'},
+  {name:'Underdog',    family:"'Underdog', cursive",         flags:'🇷🇺'},
 ];
 
 /* ============================================================
@@ -954,8 +956,8 @@ const State = {
   currentProjectId: null,
   projectName: 'Без названия',
   unsavedChanges: false,
-  selectedTitleClip: null,   // клип с титром, который тащим
-  titleDrag: null            // {startX, startY, origX, origY}
+  selectedTitleClip: null,
+  titleDrag: null
 };
 
 function fmt(t){if(!isFinite(t)||t<0)t=0;const m=Math.floor(t/60);const s=Math.floor(t%60);const cs=Math.floor((t-Math.floor(t))*100);return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}`;}
@@ -982,8 +984,10 @@ function undo(){
 }
 
 /* ============================================================
-   FX LIBRARY
+   FX LIBRARY (с частицами)
    ============================================================ */
+const PARTICLE_IDS = ['snow','fire','rain','leaves','sparks','confetti','bubbles','stars','fog','matrix'];
+
 const FX_CATEGORIES = [
   {name:'Глитч',icon:'📺',items:[
     {id:'glitch',name:'Glitch',icon:'📺',dur:0.3,params:{intensity:{min:0,max:100,default:50}}},
@@ -1021,14 +1025,27 @@ const FX_CATEGORIES = [
     {id:'kaleidoscope',name:'Kaleido',icon:'🔷',dur:0.6,params:{segments:{min:2,max:12,default:6}}},
     {id:'ghost',name:'Ghost',icon:'👻',dur:0.5,params:{intensity:{min:0,max:100,default:50}}},
   ]},
+  {name:'Частицы и погода',icon:'❄️',items:[
+    {id:'snow',     name:'Snow',     icon:'❄️',dur:3.0,params:{density:{min:20,max:300,default:100}, speed:{min:0.5,max:3,step:0.1,default:1}}},
+    {id:'fire',     name:'Fire',     icon:'🔥',dur:2.0,params:{density:{min:20,max:300,default:120}, speed:{min:0.5,max:3,step:0.1,default:1}}},
+    {id:'rain',     name:'Rain',     icon:'🌧',dur:2.0,params:{density:{min:50,max:400,default:200}, speed:{min:0.5,max:3,step:0.1,default:2}}},
+    {id:'leaves',   name:'Leaves',   icon:'🍂',dur:3.0,params:{density:{min:10,max:80,default:40}}},
+    {id:'sparks',   name:'Sparks',   icon:'✨',dur:1.5,params:{density:{min:10,max:200,default:60}}},
+    {id:'confetti', name:'Confetti', icon:'🎉',dur:3.0,params:{density:{min:20,max:300,default:100}}},
+    {id:'bubbles',  name:'Bubbles',  icon:'🫧',dur:3.0,params:{density:{min:10,max:100,default:40}}},
+    {id:'stars',    name:'Starfield',icon:'🌟',dur:4.0,params:{density:{min:20,max:300,default:100}}},
+    {id:'fog',      name:'Fog',      icon:'🌫',dur:4.0,params:{density:{min:1,max:10,default:5}, opacity:{min:10,max:100,default:50}}},
+    {id:'matrix',   name:'Matrix',   icon:'🟩',dur:3.0,params:{density:{min:20,max:200,default:80}}},
+  ]},
 ];
 const ALL_FX = FX_CATEGORIES.flatMap(c => c.items);
 function getFxDef(id){ return ALL_FX.find(f => f.id === id); }
+function isParticleFx(id){ return PARTICLE_IDS.includes(id); }
 
 /* ============================================================
-   MEDIA
+   MEDIA IMPORT
    ============================================================ */
-async function importFiles(files, onProgress){
+async function importFiles(files, onProgress, defaultTrack = null){
   const bar = document.createElement('div'); bar.className = 'loading-bar'; $('previewStage').appendChild(bar);
   let count = 0, total = files.length;
   for(const file of files){
@@ -1062,8 +1079,11 @@ async function importFiles(files, onProgress){
     } else if(isImage){ thumb = url; }
 
     const mediaId = uid();
-    const m = { id: mediaId, type:isVideo?'video':isAudio?'audio':'image',
-      name:file.name, file, url, duration, width, height, thumb, el, diskName: null };
+    const m = {
+      id: mediaId, type:isVideo?'video':isAudio?'audio':'image',
+      name:file.name, file, url, duration, width, height, thumb, el,
+      diskName: null, defaultTrack: defaultTrack || (isAudio ? 'audio' : null)
+    };
     State.media.push(m);
 
     if(FS.dirHandle){
@@ -1095,7 +1115,19 @@ function renderMedia(){
   const list = $('mediaList'); list.innerHTML='';
   State.media.forEach(m=>{
     const div = document.createElement('div'); div.className = 'media-item';
-    div.innerHTML = `<img src="${m.thumb||''}" alt=""><div class="meta"><div class="name">${escapeHtml(m.name)}</div><div class="info">${m.duration?fmt(m.duration):'—'} • ${m.type}</div></div><button class="add" title="Добавить">+</button>`;
+    let visual = '';
+    if(m.type === 'image' || (m.type === 'video' && m.thumb)){
+      visual = `<img src="${m.thumb||''}" alt="">`;
+    } else if(m.type === 'audio'){
+      const icon = m.defaultTrack === 'music' ? '🎵' : '🎤';
+      visual = `<div class="audio-icon">${icon}</div>`;
+    } else {
+      visual = `<div class="audio-icon">🎬</div>`;
+    }
+    const typeLabel = m.type === 'audio'
+      ? (m.defaultTrack === 'music' ? '🎵 Музыка' : '🎤 Аудио')
+      : m.type;
+    div.innerHTML = `${visual}<div class="meta"><div class="name">${escapeHtml(m.name)}</div><div class="info">${m.duration?fmt(m.duration):'—'} • ${typeLabel}</div></div><button class="add" title="Добавить">+</button>`;
     div.querySelector('.add').onclick = e => {e.stopPropagation(); addClipFromMedia(m);};
     div.ondblclick = ()=>addClipFromMedia(m);
     list.appendChild(div);
@@ -1104,8 +1136,10 @@ function renderMedia(){
 
 function addClipFromMedia(media, opts={}){
   let track = 'video';
-  if(media.type === 'audio') track = 'audio';
+  if(media.type === 'audio') track = media.defaultTrack || 'audio';
+  if(media.type === 'image') track = 'video';
   if(opts.music) track = 'music';
+
   const dur = media.duration || 5;
   const trackClips = State.clips.filter(c=>c.track===track);
   let start = opts.start;
@@ -1120,7 +1154,7 @@ function addClipFromMedia(media, opts={}){
     type: media.type,
     fx: {brightness:100, contrast:100, saturate:100, hue:0, blur:0, sepia:0, opacity:100, grayscale:0, invert:0},
     fadeIn: 0, fadeOut: 0, transIn: null, transOut: null,
-    title: opts.title || null, sfx: null
+    title: opts.title || null, sfx: null, loop: false
   };
   State.clips.push(clip);
   State.selectedId = clip.id;
@@ -1163,6 +1197,7 @@ function computeFxStack(fxList){
   const out = { x:0, y:0, scale:1, alpha:1, rotation:0, extraFilter:'', post: [] };
   if(!fxList || !fxList.length) return out;
   for(const fx of fxList){
+    if(isParticleFx(fx.id)) continue; // частицы рисуются отдельно
     const p = fx.p, par = fx.params || {};
     const fade = p < 0.7 ? 1 : (1 - (p-0.7)/0.3);
     switch(fx.id){
@@ -1208,6 +1243,222 @@ function applyPostFx(fxT, W, H, targetCtx = ctx, targetCanvas = canvas){
       case 'ghost': { targetCtx.save(); targetCtx.globalAlpha=fx.intensity*0.5; targetCtx.drawImage(targetCanvas,5,0); targetCtx.drawImage(targetCanvas,-5,0); targetCtx.restore(); break; }
       case 'pixelate': { if(fx.size<=1) break; const tmp=document.createElement('canvas'); const tw=Math.max(1,Math.floor(W/fx.size)), th=Math.max(1,Math.floor(H/fx.size)); tmp.width=tw; tmp.height=th; tmp.getContext('2d').drawImage(targetCanvas,0,0,tw,th); targetCtx.save(); targetCtx.imageSmoothingEnabled=false; targetCtx.drawImage(tmp,0,0,W,H); targetCtx.restore(); break; }
       case 'rgbSplit': { targetCtx.save(); targetCtx.globalCompositeOperation='screen'; targetCtx.globalAlpha=0.5; targetCtx.drawImage(targetCanvas,fx.amount,0); targetCtx.globalAlpha=0.3; targetCtx.drawImage(targetCanvas,-fx.amount,0); targetCtx.restore(); break; }
+    }
+  }
+}
+
+/* ============================================================
+   ЧАСТИЦЫ
+   ============================================================ */
+function seededRandom(seed){
+  let s = seed % 2147483647;
+  if(s <= 0) s += 2147483646;
+  return function(){
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+function drawParticleEffect(targetCtx, fx, W, H, time){
+  const p = fx.p;
+  const par = fx.params || {};
+  const t = time;
+  const fadeIn = Math.min(1, p * 5);
+  const fadeOut = Math.min(1, (1 - p) * 5);
+  const intensity = Math.min(fadeIn, fadeOut);
+
+  targetCtx.globalAlpha = intensity;
+
+  switch(fx.id){
+    case 'snow': {
+      const density = par.density ?? 100;
+      const speed = par.speed ?? 1;
+      for(let i = 0; i < density; i++){
+        const r = seededRandom(i * 137 + 7);
+        const x0 = r() * W;
+        const y0 = r() * H;
+        const size = 1 + r() * 4;
+        const drift = r() * 2 - 1;
+        const s = 30 + r() * 80;
+        const y = (y0 + t * s * speed) % (H + 50) - 25;
+        const x = (x0 + Math.sin(t * 0.5 + i) * drift * 20 + W) % W;
+        targetCtx.fillStyle = 'rgba(255,255,255,' + (0.6 + r() * 0.4) + ')';
+        targetCtx.beginPath();
+        targetCtx.arc(x, y, size, 0, Math.PI * 2);
+        targetCtx.fill();
+      }
+      break;
+    }
+    case 'rain': {
+      const density = par.density ?? 200;
+      const speed = par.speed ?? 2;
+      targetCtx.strokeStyle = 'rgba(180, 200, 255, 0.6)';
+      targetCtx.lineWidth = 1.5;
+      for(let i = 0; i < density; i++){
+        const r = seededRandom(i * 89 + 3);
+        const x = (r() * W + Math.sin(t * 0.3 + i) * 20 + W) % W;
+        const y = (r() * H + t * 800 * speed) % (H + 40) - 20;
+        const len = 15 + r() * 20;
+        targetCtx.beginPath();
+        targetCtx.moveTo(x, y);
+        targetCtx.lineTo(x - 3, y + len);
+        targetCtx.stroke();
+      }
+      break;
+    }
+    case 'fire': {
+      const density = par.density ?? 120;
+      const speed = par.speed ?? 1;
+      for(let i = 0; i < density; i++){
+        const r = seededRandom(i * 211 + 11);
+        const x0 = r() * W;
+        const size = 4 + r() * 12;
+        const yBase = H + 30;
+        const offset = (t * 200 * speed + r() * 300) % 400;
+        const y = yBase - offset;
+        const x = x0 + Math.sin(t * 2 + i) * (20 + r() * 40) - offset * 0.15;
+        const life = 1 - offset / 400;
+        const alpha = Math.max(0, life * 0.8);
+        const hue = 20 + r() * 30;
+        const light = 50 + life * 40;
+        targetCtx.fillStyle = `hsla(${hue}, 100%, ${light}%, ${alpha})`;
+        targetCtx.beginPath();
+        targetCtx.arc(x, y, size * life, 0, Math.PI * 2);
+        targetCtx.fill();
+      }
+      const g = targetCtx.createLinearGradient(0, H - 100, 0, H);
+      g.addColorStop(0, 'rgba(255, 100, 0, 0)');
+      g.addColorStop(1, 'rgba(255, 100, 0, 0.3)');
+      targetCtx.fillStyle = g;
+      targetCtx.fillRect(0, H - 100, W, 100);
+      break;
+    }
+    case 'leaves': {
+      const density = par.density ?? 40;
+      for(let i = 0; i < density; i++){
+        const r = seededRandom(i * 173 + 5);
+        const x0 = r() * W;
+        const size = 6 + r() * 10;
+        const s = 40 + r() * 60;
+        const y = (r() * H + t * s) % (H + 60) - 30;
+        const x = (x0 + Math.sin(t * 0.8 + i) * 60 + W) % W;
+        const rot = t + i;
+        targetCtx.save();
+        targetCtx.translate(x, y);
+        targetCtx.rotate(rot);
+        const colors = ['#c97b34', '#a85427', '#d4a373', '#8b5e34'];
+        targetCtx.fillStyle = colors[i % 4];
+        targetCtx.beginPath();
+        targetCtx.ellipse(0, 0, size, size * 0.4, 0, 0, Math.PI * 2);
+        targetCtx.fill();
+        targetCtx.restore();
+      }
+      break;
+    }
+    case 'sparks': {
+      const density = par.density ?? 60;
+      for(let i = 0; i < density; i++){
+        const r = seededRandom(i * 251 + 17);
+        const cycle = 1.5 + r();
+        const phase = ((t * cycle) + r() * 10) % cycle;
+        const life = 1 - phase / cycle;
+        const x = r() * W;
+        const y = H - 50 - r() * H * 0.5;
+        const drift = Math.sin(phase * 5 + i) * 30;
+        const size = 2 + r() * 3;
+        targetCtx.fillStyle = `rgba(255, ${200 + r()*55}, 100, ${life})`;
+        targetCtx.beginPath();
+        targetCtx.arc(x + drift, y - phase * 40, size * life, 0, Math.PI * 2);
+        targetCtx.fill();
+      }
+      break;
+    }
+    case 'confetti': {
+      const density = par.density ?? 100;
+      for(let i = 0; i < density; i++){
+        const r = seededRandom(i * 311 + 19);
+        const size = 4 + r() * 8;
+        const s = 200 + r() * 300;
+        const y = (r() * H + t * s) % (H + 60) - 30;
+        const x = (r() * W + Math.sin(t + i) * 50 + W) % W;
+        const rot = t * 3 + i;
+        targetCtx.save();
+        targetCtx.translate(x, y);
+        targetCtx.rotate(rot);
+        const colors = ['#ff6b9d', '#ffd93d', '#6bcf7f', '#5b8cff', '#a06bff'];
+        targetCtx.fillStyle = colors[i % 5];
+        targetCtx.fillRect(-size/2, -size/4, size, size/2);
+        targetCtx.restore();
+      }
+      break;
+    }
+    case 'bubbles': {
+      const density = par.density ?? 40;
+      for(let i = 0; i < density; i++){
+        const r = seededRandom(i * 401 + 23);
+        const size = 6 + r() * 20;
+        const s = 30 + r() * 60;
+        const x = (r() * W + Math.sin(t + i) * 30 + W) % W;
+        const y = (H + t * s) % (H + 100) - 50;
+        targetCtx.strokeStyle = `rgba(150, 200, 255, ${0.3 + r() * 0.4})`;
+        targetCtx.lineWidth = 1.5;
+        targetCtx.beginPath();
+        targetCtx.arc(x, y, size, 0, Math.PI * 2);
+        targetCtx.stroke();
+        targetCtx.fillStyle = `rgba(255,255,255,${0.2 + r() * 0.3})`;
+        targetCtx.beginPath();
+        targetCtx.arc(x - size * 0.3, y - size * 0.3, size * 0.2, 0, Math.PI * 2);
+        targetCtx.fill();
+      }
+      break;
+    }
+    case 'stars': {
+      const density = par.density ?? 100;
+      for(let i = 0; i < density; i++){
+        const r = seededRandom(i * 173 + 29);
+        const x = r() * W;
+        const y = r() * H;
+        const twinkle = 0.5 + Math.sin(t * 2 + i * 0.5) * 0.5;
+        const size = 0.5 + r() * 2;
+        targetCtx.fillStyle = `rgba(255, 255, 255, ${twinkle})`;
+        targetCtx.beginPath();
+        targetCtx.arc(x, y, size, 0, Math.PI * 2);
+        targetCtx.fill();
+      }
+      break;
+    }
+    case 'fog': {
+      const density = par.density ?? 5;
+      const opacity = (par.opacity ?? 50) / 100;
+      for(let i = 0; i < density; i++){
+        const r = seededRandom(i * 500 + 31);
+        const x = (r() * W + Math.sin(t * 0.2 + i) * 200 + W) % W;
+        const y = r() * H;
+        const size = 200 + r() * 300;
+        const g = targetCtx.createRadialGradient(x, y, 0, x, y, size);
+        g.addColorStop(0, `rgba(200, 220, 240, ${opacity * 0.3})`);
+        g.addColorStop(1, 'rgba(200, 220, 240, 0)');
+        targetCtx.fillStyle = g;
+        targetCtx.fillRect(x - size, y - size, size * 2, size * 2);
+      }
+      break;
+    }
+    case 'matrix': {
+      const density = par.density ?? 80;
+      targetCtx.font = '16px monospace';
+      targetCtx.fillStyle = '#0f0';
+      for(let i = 0; i < density; i++){
+        const r = seededRandom(i * 977 + 37);
+        const x = Math.floor(r() * W / 20) * 20;
+        const baseY = r() * H;
+        const speed = 30 + r() * 80;
+        const y = (baseY + t * speed) % (H + 100) - 50;
+        const char = String.fromCharCode(0x30A0 + Math.floor(r() * 96));
+        targetCtx.globalAlpha = intensity * (0.3 + r() * 0.7);
+        targetCtx.fillText(char, x, y);
+      }
+      targetCtx.globalAlpha = intensity;
+      break;
     }
   }
 }
@@ -1259,94 +1510,67 @@ function drawFitTransformed(targetCtx, source, W, H, trans){
 }
 
 /* ============================================================
-   TITLE RENDERING
+   TITLE
    ============================================================ */
-function drawTitle(ctx, clip, W, H, forExport = false){
+function drawTitle(targetCtx, clip, W, H){
   const t = clip.title;
   if(!t) return;
-
-  ctx.save();
-
-  // Позиция: x/y в процентах
+  targetCtx.save();
   const x = ((t.x !== undefined ? t.x : 50) / 100) * W;
   const y = ((t.y !== undefined ? t.y : 50) / 100) * H;
-
   const fontSize = t.size || 64;
   const family = t.font || "'Inter', sans-serif";
   const weight = t.weight || 400;
   const align = t.align || 'center';
 
-  ctx.font = `${weight} ${fontSize}px ${family}`;
-  ctx.textAlign = align;
-  ctx.textBaseline = 'middle';
+  targetCtx.font = `${weight} ${fontSize}px ${family}`;
+  targetCtx.textAlign = align;
+  targetCtx.textBaseline = 'middle';
 
-  // Разбиваем на строки
   const lines = (t.text || '').split('\n');
   const lineHeight = fontSize * 1.2;
   const totalHeight = lines.length * lineHeight;
   const startY = y - totalHeight/2 + lineHeight/2;
 
-  // Замер ширины для фона
   let maxWidth = 0;
   lines.forEach(line => {
-    const m = ctx.measureText(line);
+    const m = targetCtx.measureText(line);
     if(m.width > maxWidth) maxWidth = m.width;
   });
 
-  // Фон
   if(t.bg){
-    ctx.save();
+    targetCtx.save();
     let bx = x;
     if(align === 'center') bx = x - maxWidth/2;
     else if(align === 'right') bx = x - maxWidth;
     const padding = fontSize * 0.25;
-    ctx.fillStyle = t.bgColor || '#000000';
-    ctx.fillRect(bx - padding, startY - lineHeight/2 - padding/2, maxWidth + padding*2, totalHeight + padding);
-    ctx.restore();
+    targetCtx.fillStyle = t.bgColor || '#000000';
+    targetCtx.fillRect(bx - padding, startY - lineHeight/2 - padding/2, maxWidth + padding*2, totalHeight + padding);
+    targetCtx.restore();
   }
 
-  // Обводка
   if(t.strokeWidth > 0){
-    ctx.strokeStyle = t.strokeColor || '#000';
-    ctx.lineWidth = t.strokeWidth;
-    ctx.lineJoin = 'round';
+    targetCtx.strokeStyle = t.strokeColor || '#000';
+    targetCtx.lineWidth = t.strokeWidth;
+    targetCtx.lineJoin = 'round';
     lines.forEach((line, i) => {
-      ctx.strokeText(line, x, startY + i * lineHeight);
+      targetCtx.strokeText(line, x, startY + i * lineHeight);
     });
   }
 
-  // Тень
   if(t.shadow !== false){
-    ctx.shadowColor = 'rgba(0,0,0,0.7)';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetX = 2;
-    ctx.shadowOffsetY = 2;
+    targetCtx.shadowColor = 'rgba(0,0,0,0.7)';
+    targetCtx.shadowBlur = 8;
+    targetCtx.shadowOffsetX = 2;
+    targetCtx.shadowOffsetY = 2;
   }
 
-  // Сам текст
-  ctx.fillStyle = t.color || '#fff';
+  targetCtx.fillStyle = t.color || '#fff';
   lines.forEach((line, i) => {
-    ctx.fillText(line, x, startY + i * lineHeight);
+    targetCtx.fillText(line, x, startY + i * lineHeight);
   });
 
-  ctx.restore();
-}
-
-function renderTitleLayer(targetCtx, W, H){
-  State.clips.forEach(clip => {
-    if(clip.track !== 'video' || !clip.title) return;
-    const time = State.playhead;
-    if(time < clip.start || time >= clip.start + getClipDuration(clip)) return;
-    const localTime = time - clip.start;
-    const clipDur = getClipDuration(clip);
-    let alpha = 1;
-    if(localTime < 0.3) alpha = localTime/0.3;
-    if(localTime > clipDur - 0.3) alpha = Math.max(0, (clipDur - localTime)/0.3);
-    targetCtx.save();
-    targetCtx.globalAlpha = alpha;
-    drawTitle(targetCtx, clip, W, H, targetCtx !== ctx);
-    targetCtx.restore();
-  });
+  targetCtx.restore();
 }
 
 /* ============================================================
@@ -1366,9 +1590,9 @@ function compositeFrame(time, W, H, targetCtx = ctx, targetCanvas = canvas){
     if(active.transIn && localTime < active.transIn.dur) transOffset = applyTransition(active.transIn, localTime/active.transIn.dur, 'in');
     if(active.transOut && localTime > clipDur - active.transOut.dur){
       const p = (localTime - (clipDur - active.transOut.dur)) / active.transOut.dur;
-      const t = applyTransition(active.transOut, p, 'out');
-      transOffset.x += t.x; transOffset.y += t.y;
-      transOffset.scale *= t.scale; transOffset.alpha *= t.alpha;
+      const tr = applyTransition(active.transOut, p, 'out');
+      transOffset.x += tr.x; transOffset.y += tr.y;
+      transOffset.scale *= tr.scale; transOffset.alpha *= tr.alpha;
     }
     let fadeAlpha = 1;
     if(active.fadeIn > 0 && localTime < active.fadeIn) fadeAlpha *= localTime/active.fadeIn;
@@ -1385,7 +1609,15 @@ function compositeFrame(time, W, H, targetCtx = ctx, targetCanvas = canvas){
 
   if(targetCtx === ctx) applyPostFx(fxT, W, H);
 
-  // Титры
+  // Частицы — ПОВЕРХ видео
+  const particleFx = activeFx.filter(f => isParticleFx(f.id));
+  if(particleFx.length > 0){
+    targetCtx.save();
+    particleFx.forEach(fx => drawParticleEffect(targetCtx, fx, W, H, time));
+    targetCtx.restore();
+  }
+
+  // Титры — поверх всего
   State.clips.forEach(clip => {
     if(clip.track !== 'video' || !clip.title) return;
     if(time < clip.start || time >= clip.start + getClipDuration(clip)) return;
@@ -1407,8 +1639,9 @@ async function renderPreviewAt(time){
   const active = getActiveVideoClip(time);
   const media = active ? getMedia(active.mediaId) : null;
   const hasTitle = State.clips.some(c => c.track === 'video' && c.title && time >= c.start && time < c.start + getClipDuration(c));
+  const hasFx = State.clips.some(c => c.track === 'fx' && time >= c.start && time < c.start + getClipDuration(c));
 
-  if(!active && !hasTitle){ canvas.style.display = 'none'; $('previewEmpty').style.display = 'block'; updateTextOverlay(); return; }
+  if(!active && !hasTitle && !hasFx){ canvas.style.display = 'none'; $('previewEmpty').style.display = 'block'; updateTextOverlay(); return; }
   canvas.style.display = 'block'; $('previewEmpty').style.display = 'none';
   ensureCanvasSize();
 
@@ -1427,6 +1660,11 @@ async function renderPreviewAt(time){
   }
   compositeFrame(time, canvas.width, canvas.height);
   updateTextOverlay();
+}
+
+function refreshPreview(){
+  if(State.playing) drawCurrentFrame();
+  else renderPreviewAt(State.playhead);
 }
 
 function applyTransition(trans, p, dir){
@@ -1462,6 +1700,32 @@ function prepareActiveVideo(time){
       }
     }
   } else if(clip && activeVideoEl && activeVideoEl.paused) activeVideoEl.play().catch(()=>{});
+
+  // Аудио/музыка
+  State.media.forEach(m => {
+    if(m.type !== 'audio' || !m.el) return;
+    const activeClips = State.clips.filter(c =>
+      c.mediaId === m.id &&
+      (c.track === 'audio' || c.track === 'music') &&
+      time >= c.start && time < c.start + getClipDuration(c)
+    );
+    if(activeClips.length === 0){
+      m.el.pause();
+      return;
+    }
+    const c = activeClips[0];
+    let targetTime = (time - c.start) * c.speed + c.in;
+    if(c.loop && m.el.duration > 0){
+      targetTime = c.in + ((targetTime - c.in) % Math.max(0.1, m.el.duration - c.in));
+    }
+    if(Math.abs(m.el.currentTime - targetTime) > 0.3){
+      m.el.currentTime = targetTime;
+    }
+    m.el.playbackRate = c.speed;
+    m.el.volume = clamp(c.volume, 0, 1);
+    if(!State.playing) m.el.pause();
+    else if(m.el.paused) m.el.play().catch(()=>{});
+  });
 }
 
 function drawCurrentFrame(){ ensureCanvasSize(); compositeFrame(State.playhead, canvas.width, canvas.height); updateTextOverlay(); }
@@ -1538,7 +1802,7 @@ function pause(){
 }
 
 /* ============================================================
-   ТЕКСТ: DRAG & DROP
+   TITLE DRAG
    ============================================================ */
 const textOverlay = $('textOverlay');
 const dragHandle = $('dragHandle');
@@ -1554,7 +1818,6 @@ function updateTextOverlay(){
     State.selectedTitleClip = null;
     return;
   }
-  // Берём активный (первый)
   const clip = State.selectedTitleClip && titles.find(t => t.id === State.selectedTitleClip.id)
     ? State.selectedTitleClip
     : titles[0];
@@ -1562,7 +1825,6 @@ function updateTextOverlay(){
 
   textOverlay.classList.add('editing');
 
-  // Позиционируем хитбокс
   const canvasRect = canvas.getBoundingClientRect();
   const stageRect = $('previewStage').getBoundingClientRect();
   const offsetX = canvasRect.left - stageRect.left;
@@ -1574,7 +1836,6 @@ function updateTextOverlay(){
   const x = ((t.x ?? 50) / 100) * cssW + offsetX;
   const y = ((t.y ?? 50) / 100) * cssH + offsetY;
 
-  // Примерный размер
   ctx.save();
   ctx.font = `${t.weight || 400} ${t.size || 64}px ${t.font || 'Inter'}`;
   const lines = (t.text || '').split('\n');
@@ -1590,7 +1851,6 @@ function updateTextOverlay(){
   dragHandle.style.top = (y - Math.max(20, hCSS)/2) + 'px';
 }
 
-// Начало перетаскивания
 dragHandle.addEventListener('mousedown', (e) => {
   if(!State.selectedTitleClip) return;
   e.preventDefault();
@@ -1615,9 +1875,7 @@ document.addEventListener('mousemove', (e) => {
   const pctY = d.origY + (dy / d.rect.height) * 100;
   State.selectedTitleClip.title.x = clamp(pctX, 0, 100);
   State.selectedTitleClip.title.y = clamp(pctY, 0, 100);
-  // Перерисовка
-  if(!State.playing) renderPreviewAt(State.playhead);
-  else drawCurrentFrame();
+  refreshPreview();
   updateTextOverlay();
 });
 
@@ -1629,13 +1887,10 @@ document.addEventListener('mouseup', () => {
   }
 });
 
-// Клик на превью — выбираем титр для drag
 $('previewStage').addEventListener('click', (e) => {
   const titles = getTitlesAt(State.playhead);
   if(titles.length === 0) return;
-  // Если клик пришёл по dragHandle — не обрабатываем
   if(e.target === dragHandle) return;
-  // Ищем титр, в который попал клик
   const stageRect = $('previewStage').getBoundingClientRect();
   const clickX = ((e.clientX - stageRect.left) / stageRect.width) * 100;
   const clickY = ((e.clientY - stageRect.top) / stageRect.height) * 100;
@@ -1643,7 +1898,6 @@ $('previewStage').addEventListener('click', (e) => {
   for(const c of titles){
     const tx = c.title.x ?? 50;
     const ty = c.title.y ?? 50;
-    // Грубая проверка
     if(Math.abs(tx - clickX) < 30 && Math.abs(ty - clickY) < 10){
       found = c;
       break;
@@ -1688,7 +1942,8 @@ function renderRuler(totalSec,pps){
 function makeClipEl(clip){
   const pps = State.pixelsPerSec, media = getMedia(clip.mediaId), dur = getClipDuration(clip);
   const el = document.createElement('div');
-  el.className = 'clip ' + clip.track + '-clip' + (clip.id === State.selectedId ? ' selected' : '');
+  const isParticle = clip.track === 'fx' && isParticleFx(clip.fxId);
+  el.className = 'clip ' + (isParticle ? 'particle-clip' : clip.track + '-clip') + (clip.id === State.selectedId ? ' selected' : '');
   el.dataset.id = clip.id;
   el.style.left = (clip.start * pps) + 'px';
   el.style.width = Math.max(20, dur * pps) + 'px';
@@ -1698,7 +1953,7 @@ function makeClipEl(clip){
   if(isFx){
     html = `<div class="clip-label">${fxDef?.icon||'⚡'} ${escapeHtml(clip.name)}</div><div class="clip-dur">${fmt(dur)}</div><div class="handle left"></div><div class="handle right"></div>`;
   } else {
-    html = `<div class="clip-thumb" style="${bgThumb};opacity:.3"></div><div class="clip-label">${escapeHtml(clip.name)}</div>${clip.title?'<div class="clip-title-badge">T</div>':''}${clip.transIn?'<div class="clip-trans left"></div>':''}${clip.transOut?'<div class="clip-trans right"></div>':''}<div class="clip-dur">${fmt(dur)}</div><div class="handle left"></div><div class="handle right"></div>`;
+    html = `<div class="clip-thumb" style="${bgThumb};opacity:.3"></div><div class="clip-label">${clip.title?'📝 ':''}${escapeHtml(clip.name)}</div>${clip.title?'<div class="clip-title-badge">T</div>':''}${clip.loop?'<div class="clip-loop-badge">⟳</div>':''}${clip.transIn?'<div class="clip-trans left"></div>':''}${clip.transOut?'<div class="clip-trans right"></div>':''}<div class="clip-dur">${fmt(dur)}</div><div class="handle left"></div><div class="handle right"></div>`;
   }
   el.innerHTML = html;
   el.addEventListener('mousedown', e => {
@@ -1715,7 +1970,7 @@ function makeClipEl(clip){
 function startDrag(e, clip, mode){
   e.preventDefault();
   const startX = e.clientX, startClip = JSON.parse(JSON.stringify(clip)), pps = State.pixelsPerSec;
-  const media = getMedia(clip.mediaId), maxDur = clip.track === 'fx' ? 10 : (media?.duration || 60);
+  const media = getMedia(clip.mediaId), maxDur = clip.track === 'fx' ? 20 : (media?.duration || 60);
   function move(ev){
     const dx = (ev.clientX - startX) / pps;
     if(mode === 'move') clip.start = Math.max(0, startClip.start + dx);
@@ -1735,7 +1990,6 @@ function startDrag(e, clip, mode){
 function splitClipAt(clipId, globalTime){
   const clip = State.clips.find(c => c.id === clipId);
   if(!clip) return;
-  const media = getMedia(clip.mediaId), maxDur = media?.duration || clip.out;
   const splitPoint = clip.in + (globalTime - clip.start) * clip.speed;
   if(splitPoint <= clip.in + 0.05 || splitPoint >= clip.out - 0.05) return;
   const right = JSON.parse(JSON.stringify(clip));
@@ -1773,7 +2027,9 @@ function updateInspector(){
   $('trimBlock').style.display = isFx ? 'none' : 'block';
   $('videoPropsBlock').style.display = isFx ? 'none' : 'block';
   $('fxBlock').style.display = isFx ? 'block' : 'none';
+  $('loopBlock').style.display = (c.track === 'music' || c.track === 'audio') ? 'block' : 'none';
   $('propName').value = c.name;
+
   if(isFx){
     const def = getFxDef(c.fxId);
     $('fxType').value = def ? def.name : c.fxId;
@@ -1788,13 +2044,13 @@ function updateInspector(){
         if(p.type === 'color'){
           wrap.innerHTML = `<label>${key}</label><div class="color-row"><input type="color" value="${val}"><input type="text" value="${val}"></div>`;
           const colorInp = wrap.querySelector('input[type=color]'), textInp = wrap.querySelector('input[type=text]');
-          colorInp.oninput = e => { c.params[key] = e.target.value; textInp.value = e.target.value; if(!State.playing) renderPreviewAt(State.playhead); else drawCurrentFrame(); };
-          textInp.oninput = e => { c.params[key] = e.target.value; if(/^#[0-9a-f]{6}$/i.test(e.target.value)) colorInp.value = e.target.value; if(!State.playing) renderPreviewAt(State.playhead); else drawCurrentFrame(); };
+          colorInp.oninput = e => { c.params[key] = e.target.value; textInp.value = e.target.value; refreshPreview(); };
+          textInp.oninput = e => { c.params[key] = e.target.value; if(/^#[0-9a-f]{6}$/i.test(e.target.value)) colorInp.value = e.target.value; refreshPreview(); };
         } else {
           const min = p.min ?? 0, max = p.max ?? 100, step = p.step ?? 1;
           wrap.innerHTML = `<label>${key}</label><div class="pr"><input type="range" min="${min}" max="${max}" step="${step}" value="${val}"><span class="pv">${val}</span></div>`;
           const slider = wrap.querySelector('input'), pv = wrap.querySelector('.pv');
-          slider.oninput = e => { c.params[key] = parseFloat(e.target.value); pv.textContent = e.target.value; if(!State.playing) renderPreviewAt(State.playhead); else drawCurrentFrame(); };
+          slider.oninput = e => { c.params[key] = parseFloat(e.target.value); pv.textContent = e.target.value; refreshPreview(); };
         }
         paramsBox.appendChild(wrap);
       }
@@ -1822,6 +2078,7 @@ function updateInspector(){
     $('pVolume').value = Math.round(c.volume*100); $('vVolume').textContent = Math.round(c.volume*100);
     $('pFadeIn').value = Math.round(c.fadeIn*1000); $('vFadeIn').textContent = (c.fadeIn*1000).toFixed(0);
     $('pFadeOut').value = Math.round(c.fadeOut*1000); $('vFadeOut').textContent = (c.fadeOut*1000).toFixed(0);
+    $('pLoop').checked = !!c.loop;
     const cont = $('appliedFx'); cont.innerHTML = '';
     const active = [];
     if(c.transIn) active.push({name:'→ in: '+c.transIn.id, rm:()=>{c.transIn=null;}});
@@ -1843,10 +2100,10 @@ function bindInspector(){
   $('propIn').onchange = e => { const c = getSelectedClip(); if(!c) return; c.in = clamp(parseTime(e.target.value), 0, c.out-0.05); renderAll(); snapshot(); };
   $('propOut').onchange = e => { const c = getSelectedClip(); if(!c) return; const m = getMedia(c.mediaId), max = m?.duration||60; c.out = clamp(parseTime(e.target.value), c.in+0.05, max); renderAll(); snapshot(); };
   document.querySelectorAll('#speedRow button').forEach(b => { b.onclick = ()=>{const c = getSelectedClip(); if(!c) return; c.speed = parseFloat(b.dataset.speed); snapshot(); renderAll();}; });
-  $('fxDur').onchange = e => { const c = getSelectedClip(); if(!c || c.track !== 'fx') return; c.out = clamp(parseFloat(e.target.value)||0.3, 0.05, 10); renderAll(); snapshot(); };
-  $('fxTarget').onchange = e => { const c = getSelectedClip(); if(!c || c.track !== 'fx') return; c.target = e.target.value; if(!State.playing) renderPreviewAt(State.playhead); else drawCurrentFrame(); };
+  $('fxDur').onchange = e => { const c = getSelectedClip(); if(!c || c.track !== 'fx') return; c.out = clamp(parseFloat(e.target.value)||0.3, 0.05, 20); renderAll(); snapshot(); };
+  $('fxTarget').onchange = e => { const c = getSelectedClip(); if(!c || c.track !== 'fx') return; c.target = e.target.value; refreshPreview(); };
   $('fxStart').onchange = e => { const c = getSelectedClip(); if(!c || c.track !== 'fx') return; c.start = Math.max(0, parseFloat(e.target.value)||0); renderAll(); snapshot(); };
-  const bindFx = (inputId, valId, param) => { $(inputId).oninput = e => { const v = parseFloat(e.target.value); $(valId).textContent = e.target.value; const c = getSelectedClip(); if(!c) return; c.fx[param] = v; if(!State.playing) renderPreviewAt(State.playhead); else drawCurrentFrame(); renderTimeline(); }; };
+  const bindFx = (inputId, valId, param) => { $(inputId).oninput = e => { const v = parseFloat(e.target.value); $(valId).textContent = e.target.value; const c = getSelectedClip(); if(!c) return; c.fx[param] = v; refreshPreview(); renderTimeline(); }; };
   bindFx('pBrightness','vBrightness','brightness');
   bindFx('pContrast','vContrast','contrast');
   bindFx('pSaturate','vSaturate','saturate');
@@ -1857,6 +2114,7 @@ function bindInspector(){
   $('pVolume').oninput = e => { const c = getSelectedClip(); if(!c) return; c.volume = parseInt(e.target.value)/100; $('vVolume').textContent = e.target.value; };
   $('pFadeIn').oninput = e => { const c = getSelectedClip(); if(!c) return; c.fadeIn = parseInt(e.target.value)/1000; $('vFadeIn').textContent = e.target.value; };
   $('pFadeOut').oninput = e => { const c = getSelectedClip(); if(!c) return; c.fadeOut = parseInt(e.target.value)/1000; $('vFadeOut').textContent = e.target.value; };
+  $('pLoop').onchange = e => { const c = getSelectedClip(); if(!c) return; c.loop = e.target.checked; snapshot(); renderAll(); };
   $('btnAddTitle').onclick = ()=>openTitleModal();
   $('btnEditTitle').onclick = ()=>{ const c = getSelectedClip(); if(c && c.title) openTitleModal(c); else toast('У клипа нет титра', 'warn'); };
 }
@@ -2031,7 +2289,7 @@ function serializeProject(){
     media: State.media.map(m => ({
       id: m.id, type: m.type, name: m.name, duration: m.duration,
       width: m.width, height: m.height, thumb: m.thumb,
-      diskName: m.diskName
+      diskName: m.diskName, defaultTrack: m.defaultTrack
     }))
   };
 }
@@ -2089,7 +2347,8 @@ async function loadProject(id, silent = false){
       id: m.id, type: m.type, name: m.name,
       file, url, duration: m.duration || duration,
       width: m.width || width, height: m.height || height,
-      thumb: m.thumb || thumb, el, diskName: m.diskName
+      thumb: m.thumb || thumb, el, diskName: m.diskName,
+      defaultTrack: m.defaultTrack || null
     });
   }
 
@@ -2267,13 +2526,9 @@ function openTitleModal(editClip = null){
   $('titleBgColor').value = t.bgColor || '#000000';
   $('titleBgColorTxt').value = t.bgColor || '#000000';
 
-  // Шрифт
   document.querySelectorAll('.font-btn').forEach(b => b.classList.toggle('active', b.dataset.font === t.font));
-  // Вес
   document.querySelectorAll('[data-weight]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.weight) === (t.weight || 400)));
-  // Выравнивание
   document.querySelectorAll('#alignRow .align-btn').forEach(b => b.classList.toggle('active', b.dataset.align === (t.align || 'center')));
-  // Позиция
   const activePos = t.y < 30 ? 'top' : t.y > 70 ? 'bottom' : 'center';
   $('btnPosTop').classList.toggle('active', activePos === 'top');
   $('btnPosCenter').classList.toggle('active', activePos === 'center');
@@ -2289,7 +2544,7 @@ function buildFontGrid(){
     b.className = 'font-btn';
     b.dataset.font = f.family;
     b.style.fontFamily = f.family;
-    b.innerHTML = `<div style="font-weight:700;font-size:14px">${f.name}</div><small>${f.name}</small>`;
+    b.innerHTML = `<div class="font-name" style="font-weight:700">${f.name}</div><small>${f.flags}</small>`;
     b.onclick = () => {
       document.querySelectorAll('.font-btn').forEach(x => x.classList.remove('active'));
       b.classList.add('active');
@@ -2299,7 +2554,6 @@ function buildFontGrid(){
 }
 
 function bindTitleModal(){
-  $('titleText').oninput = ()=>{};
   $('titleSize').oninput = e => $('titleSizeVal').textContent = e.target.value;
   $('titleColorPick').oninput = e => $('titleColor').value = e.target.value;
   $('titleColor').oninput = e => { if(/^#[0-9a-f]{6}$/i.test(e.target.value)) $('titleColorPick').value = e.target.value; };
@@ -2342,7 +2596,6 @@ function bindTitleModal(){
     const bg = $('titleBg').checked;
     const bgColor = $('titleBgColor').value || '#000';
 
-    // Позиция
     let posY = 50;
     if($('btnPosTop').classList.contains('active')) posY = 15;
     else if($('btnPosBottom').classList.contains('active')) posY = 85;
@@ -2376,9 +2629,10 @@ function bindTitleModal(){
 }
 
 /* ============================================================
-   AI (упрощённо — как было)
+   AI
    ============================================================ */
 let aiSettings = { mode: 'dynamic', targetDur: 30 };
+
 function openAIModal(){
   $('aiSetup').style.display = 'block';
   $('aiStart').style.display = 'block';
@@ -2518,7 +2772,7 @@ async function runAIMontage(videoMedia, onProgress){
       in: inT, out: outT, speed: 1, volume: 1,
       name: m.name.replace(/\.[^.]+$/, ''), type: m.type,
       fx: {brightness:100,contrast:100,saturate:100,hue:0,blur:0,sepia:0,opacity:100,grayscale:0,invert:0, ...(modeConfig.colorFx||{})},
-      fadeIn: 0, fadeOut: 0, transIn: null, transOut: null, title: null, sfx: null
+      fadeIn: 0, fadeOut: 0, transIn: null, transOut: null, title: null, sfx: null, loop: false
     });
     cursor += (outT - inT) + modeConfig.gap;
   });
@@ -2542,7 +2796,7 @@ async function runAIMontage(videoMedia, onProgress){
 
   const fxClips = [];
   if(modeConfig.useFx){
-    const fxPool = ['flash','shake','zoomPunch','glitch','bloom','vignette','shakeX'];
+    const fxPool = ['flash','shake','zoomPunch','glitch','bloom','vignette','snow','sparks'];
     newClips.forEach(clip => {
       if(Math.random() < modeConfig.fxChance){
         const fxId = fxPool[Math.floor(Math.random()*fxPool.length)];
@@ -2719,6 +2973,21 @@ function bindUI(){
   dz.ondragleave = ()=>dz.classList.remove('over');
   dz.ondrop = async e=>{e.preventDefault(); dz.classList.remove('over'); await importFiles(Array.from(e.dataTransfer.files));};
 
+  // Music
+  $('musicInput').onchange = async e=>{
+    await importFiles(Array.from(e.target.files), null, 'music');
+    e.target.value='';
+  };
+  const md = $('musicDropzone');
+  md.onclick = ()=>$('musicInput').click();
+  md.ondragover = e=>{e.preventDefault(); md.classList.add('over');};
+  md.ondragleave = ()=>md.classList.remove('over');
+  md.ondrop = async e=>{
+    e.preventDefault(); md.classList.remove('over');
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('audio/'));
+    await importFiles(files, null, 'music');
+  };
+
   $('btnPlay').onclick = ()=>State.playing ? pause() : play();
   $('btnPrevFrame').onclick = ()=>seekTo(State.playhead - 1/State.fps);
   $('btnNextFrame').onclick = ()=>seekTo(State.playhead + 1/State.fps);
@@ -2777,7 +3046,6 @@ function bindUI(){
     if(e.target.matches('input,textarea,select')) return;
     if(!$('app').classList.contains('active')) return;
 
-    // Стрелки для титров, если титр выбран
     if(State.selectedTitleClip && (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight')){
       e.preventDefault();
       const t = State.selectedTitleClip.title;
@@ -2786,7 +3054,7 @@ function bindUI(){
       if(e.key === 'ArrowDown') t.y = clamp((t.y ?? 50) + step, 0, 100);
       if(e.key === 'ArrowLeft') t.x = clamp((t.x ?? 50) - step, 0, 100);
       if(e.key === 'ArrowRight') t.x = clamp((t.x ?? 50) + step, 0, 100);
-      if(!State.playing) renderPreviewAt(State.playhead); else drawCurrentFrame();
+      refreshPreview();
       updateTextOverlay();
       markUnsaved();
       return;
